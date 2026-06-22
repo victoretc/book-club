@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppHeader from '@/components/AppHeader.vue'
-import ToastNotification from '@/components/ToastNotification.vue'
+import AppHeader from '@/components/AppHeader/AppHeader.vue'
+import ToastNotification from '@/components/ToastNotification/ToastNotification.vue'
 </script>
 
 <template>

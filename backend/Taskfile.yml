@@ -2,7 +2,6 @@ version: '3'
 
 vars:
   SIMULTANEOUS_TEST_JOBS: 4
-  JSON_SCHEMA_URL: "http://127.0.0.1:8000/api/v1/docs/schema/?format=json"
 
 tasks:
   default:
@@ -34,10 +33,6 @@ tasks:
       - uv run pymarkdown scan README.md
       - uv run dotenv-linter src/env/.env
 
-  test:
-    cmds:
-      - uv run pytest src/clubs --dead-fixtures
-      - uv run pytest src/clubs --create-db --reuse-db --exitfirst -n {{.SIMULTANEOUS_TEST_JOBS}} --alluredir=allure-results
 
   csu:
     cmds:
@@ -54,11 +49,6 @@ tasks:
   migrations:
     cmds:
       - uv run python src/manage.py makemigrations
-
-  generate-client:
-    dir: src
-    cmds:
-      - uv run restcodegen generate -u {{.JSON_SCHEMA_URL}} -s "book_club" -a false
 
   loaddata: 
     dir: src 

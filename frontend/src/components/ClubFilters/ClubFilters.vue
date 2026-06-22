@@ -3,7 +3,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

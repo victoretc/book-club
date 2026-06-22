@@ -4,7 +4,7 @@ import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import type { BookReview, Member } from '@/api/data-contracts'
 import { getStars, formatDate } from '@/utils/format'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 const props = defineProps<{
   clubId: number
@@ -182,6 +182,9 @@ onMounted(loadReviews)
       </BaseButton>
     </div>
 
+    <div v-if="success" class="msg msg--success">{{ success }}</div>
+    <div v-if="error" class="msg msg--error">{{ error }}</div>
+
     <div v-if="formState !== 'idle'" ref="formRef" class="review-form">
       <h3 class="form-title">{{ formState === 'creating' ? 'Новый отзыв' : 'Редактирование отзыва' }}</h3>
       <form @submit.prevent="formState === 'creating' ? createReview() : updateReview()">
@@ -221,9 +224,6 @@ onMounted(loadReviews)
             required
           />
         </div>
-
-        <div v-if="error" class="msg msg--error">{{ error }}</div>
-        <div v-if="success" class="msg msg--success">{{ success }}</div>
 
         <div class="form-actions">
           <BaseButton type="submit" variant="primary" :loading="isLoading" :disabled="isLoading">

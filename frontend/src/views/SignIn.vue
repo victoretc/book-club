@@ -2,7 +2,7 @@
 import { ref, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter, useRoute } from 'vue-router'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()

@@ -4,8 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
 import { pluralize, reviewLabel } from '@/utils/plural'
-import ClubReviews from '@/components/ClubReviews.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import ClubReviews from '@/components/ClubReviews/ClubReviews.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import type { Club } from '@/api/data-contracts'
 
 const route = useRoute()

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import ClubForm from '@/components/ClubForm.vue'
+import ClubForm from '@/components/ClubForm/ClubForm.vue'
 
 const route = useRoute()
 </script>

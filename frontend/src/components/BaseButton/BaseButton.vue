@@ -85,8 +85,6 @@ const classes = computed(() => [
   width: 100%;
 }
 
-/* === Primary === */
-
 .base-btn--primary {
   background: var(--color-brand);
   color: #FFFFFF;
@@ -100,8 +98,6 @@ const classes = computed(() => [
 .base-btn--primary:active:not(:disabled) {
   filter: brightness(0.92);
 }
-
-/* === Outline === */
 
 .base-btn--outline {
   background: transparent;
@@ -119,8 +115,6 @@ const classes = computed(() => [
   filter: brightness(0.92);
 }
 
-/* === Brand Outline === */
-
 .base-btn--brand-outline {
   background: transparent;
   color: var(--color-brand);
@@ -135,8 +129,6 @@ const classes = computed(() => [
   filter: brightness(0.92);
 }
 
-/* === Danger === */
-
 .base-btn--danger {
   background: transparent;
   color: var(--color-error);
@@ -150,8 +142,6 @@ const classes = computed(() => [
 .base-btn--danger:active:not(:disabled) {
   filter: brightness(0.92);
 }
-
-/* === Ghost === */
 
 .base-btn--ghost {
   background: none;

@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useForm, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 import { useClubsStore } from '@/stores/clubs'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 interface Props {
   clubId?: number | null

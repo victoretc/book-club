@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import { useClubsStore } from '@/stores/clubs'
 import { useAuthStore } from '@/stores/auth'
 import type { Club, Member } from '@/api/data-contracts'
-import ClubFilters from '@/components/ClubFilters.vue'
-import PaginationControls from '@/components/PaginationControls.vue'
+import ClubFilters from '@/components/ClubFilters/ClubFilters.vue'
+import PaginationControls from '@/components/PaginationControls/PaginationControls.vue'
 import { memberReadingText } from '@/utils/plural'
 
 const clubsStore = useClubsStore()
