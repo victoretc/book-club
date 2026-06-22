@@ -30,7 +30,7 @@ const editForm = ref({
   email: '',
 })
 
-onMounted(() => {
+function initForm() {
   if (authStore.user) {
     editForm.value = {
       username: authStore.user.username || '',
@@ -39,7 +39,9 @@ onMounted(() => {
       email: authStore.user.email || '',
     }
   }
-})
+}
+
+onMounted(initForm)
 
 const handleLogout = async () => {
   await authStore.logout()

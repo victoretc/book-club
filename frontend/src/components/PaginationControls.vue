@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useClubsStore } from '@/stores/clubs'
+import { storeToRefs } from 'pinia'
 
 const clubsStore = useClubsStore()
+const { totalPages, pagination } = storeToRefs(clubsStore)
 
-const currentPage = computed(() => clubsStore.pagination.currentPage)
-const totalPages = computed(() => clubsStore.totalPages)
+const currentPage = computed(() => pagination.value.currentPage)
 const pageSize = computed({
-  get: () => clubsStore.pagination.pageSize,
+  get: () => pagination.value.pageSize,
   set: (value) => clubsStore.changePageSize(Number(value)),
 })
 

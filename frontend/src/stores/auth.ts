@@ -1,48 +1,29 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
-import type { User, TokenResponse, AuthState } from '@/types/users'
+import { ref, computed } from 'vue'
+import { api, setTokens, clearTokens } from '@/api'
+import type { TokenRefresh, PatchedUser, User } from '@/api/data-contracts'
 
 const AUTH_STORAGE_KEY = 'book_club_auth'
-const REFRESH_ENDPOINT = '/api/v1/auth/token/refresh/'
+
+type AuthUser = User & {
+  firstName?: string
+  lastName?: string
+  email?: string
+  remoteAddr?: string
+}
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
+  const user = ref<AuthUser | null>(null)
   const accessToken = ref<string | null>(null)
   const refreshToken = ref<string | null>(null)
-  const isAuthenticated = ref(false)
-  const pendingClubJoin = ref<number | null>(null)
-
-  const updateAxiosAuthHeader = (token: string | null) => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    } else {
-      delete axios.defaults.headers.common['Authorization']
-    }
-  }
-
-  const setPendingClubJoin = (clubId: number) => {
-    pendingClubJoin.value = clubId
-    saveState()
-  }
-
-  const clearPendingClubJoin = () => {
-    pendingClubJoin.value = null
-    saveState()
-  }
+  const isAuthenticated = computed(() => !!accessToken.value)
 
   const saveState = () => {
-    const state: Omit<AuthState, 'pendingClubJoin'> & { pendingClubJoin?: number } = {
+    const state = {
       user: user.value,
       accessToken: accessToken.value,
       refreshToken: refreshToken.value,
-      isAuthenticated: isAuthenticated.value,
     }
-
-    if (pendingClubJoin.value !== null) {
-      state.pendingClubJoin = pendingClubJoin.value
-    }
-
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state))
   }
 
@@ -50,80 +31,62 @@ export const useAuthStore = defineStore('auth', () => {
     const savedState = localStorage.getItem(AUTH_STORAGE_KEY)
     if (!savedState) return
 
+    let parsed: Record<string, unknown>
     try {
-      const {
-        user: savedUser,
-        accessToken: savedAccessToken,
-        refreshToken: savedRefreshToken,
-        isAuthenticated: savedIsAuthenticated,
-        pendingClubJoin: savedPendingClubJoin,
-      } = JSON.parse(savedState) as Partial<AuthState>
-
-      user.value = savedUser || null
-      accessToken.value = savedAccessToken || null
-      refreshToken.value = savedRefreshToken || null
-      isAuthenticated.value = savedIsAuthenticated || false
-      pendingClubJoin.value = savedPendingClubJoin || null
-
-      if (accessToken.value) {
-        updateAxiosAuthHeader(accessToken.value)
-      }
-    } catch (error) {
-      console.error('Failed to parse auth state from localStorage', error)
+      parsed = JSON.parse(savedState)
+      if (typeof parsed !== 'object' || parsed === null) throw new Error('Invalid state')
+    } catch {
       localStorage.removeItem(AUTH_STORAGE_KEY)
+      return
+    }
+
+    user.value = (parsed.user as AuthUser) || null
+    accessToken.value = (parsed.accessToken as string) || null
+    refreshToken.value = (parsed.refreshToken as string) || null
+
+    if (accessToken.value) {
+      setTokens(accessToken.value, refreshToken.value)
     }
   }
 
   const requestCode = async (email: string) => {
-    await axios.post('/api/v1/auth/code/', { email })
+    await api.api.authCodeCreate({ email })
   }
 
   const verifyCode = async (email: string, code: string) => {
-    const response = await axios.post<TokenResponse>('/api/v1/auth/code/verify/', {
-      email,
-      code,
-    })
+    const response = await api.api.authCodeVerifyCreate({ email, code })
+    const data = response.data as unknown as TokenRefresh
 
-    accessToken.value = response.data.access
-    refreshToken.value = response.data.refresh
-    isAuthenticated.value = true
+    accessToken.value = data.access
+    refreshToken.value = data.refresh
 
-    updateAxiosAuthHeader(accessToken.value)
+    setTokens(accessToken.value, refreshToken.value)
     await fetchUser()
     saveState()
   }
 
-  const fetchUser = async () => {
+  async function fetchUser() {
     if (!accessToken.value) return
 
     try {
-      const response = await axios.get<User>('/api/v1/users/me/')
-      user.value = response.data
+      const response = await api.api.usersMeRetrieve()
+      user.value = response.data as unknown as AuthUser
       saveState()
-    } catch (error) {
-      const axiosError = error as AxiosError
-      if (axiosError.response?.status === 401) {
-        if (await refreshTokens()) {
-          await fetchUser()
-        } else {
-          logout()
-        }
-      } else {
-        throw error
-      }
+    } catch {
+      console.error('Failed to fetch user')
     }
   }
 
-  const updateUser = async (userData: Partial<User>) => {
+  const updateUser = async (userData: PatchedUser) => {
     if (!accessToken.value) {
       throw new Error('No access token')
     }
 
     try {
-      const response = await axios.patch<User>('/api/v1/users/me/', userData)
-      user.value = response.data
+      const response = await api.api.usersMePartialUpdate(userData)
+      user.value = response.data as unknown as AuthUser
       saveState()
-      return response.data
+      return response.data as unknown as { id: number; username: string }
     } catch (error) {
       console.error('Failed to update user:', error)
       throw error
@@ -137,15 +100,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await axios.post<TokenResponse>(REFRESH_ENDPOINT, {
+      const response = await api.api.authTokenRefreshCreate({
         refresh: refreshToken.value,
-      })
+        access: '',
+      } as TokenRefresh)
+      const data = response.data as unknown as TokenRefresh
 
-      accessToken.value = response.data.access
-      refreshToken.value = response.data.refresh || refreshToken.value
-      isAuthenticated.value = true
+      accessToken.value = data.access
+      refreshToken.value = data.refresh || refreshToken.value
 
-      updateAxiosAuthHeader(accessToken.value)
+      setTokens(accessToken.value, refreshToken.value)
       saveState()
       return true
     } catch (error) {
@@ -159,10 +123,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     accessToken.value = null
     refreshToken.value = null
-    isAuthenticated.value = false
-    pendingClubJoin.value = null
 
-    updateAxiosAuthHeader(null)
+    clearTokens()
     localStorage.removeItem(AUTH_STORAGE_KEY)
   }
 
@@ -173,7 +135,6 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken,
     refreshToken,
     isAuthenticated,
-    pendingClubJoin,
     requestCode,
     verifyCode,
     logout,
@@ -181,39 +142,5 @@ export const useAuthStore = defineStore('auth', () => {
     updateUser,
     refreshTokens,
     loadState,
-    setPendingClubJoin,
-    clearPendingClubJoin,
   }
 })
-
-axios.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
-    const authStore = useAuthStore()
-
-    if (
-      originalRequest.url === REFRESH_ENDPOINT ||
-      originalRequest._retry ||
-      error.response?.status !== 401
-    ) {
-      return Promise.reject(error)
-    }
-
-    originalRequest._retry = true
-
-    try {
-      const refreshed = await authStore.refreshTokens()
-      if (refreshed && authStore.accessToken) {
-        originalRequest.headers = originalRequest.headers || {}
-        originalRequest.headers['Authorization'] = `Bearer ${authStore.accessToken}`
-        return axios(originalRequest)
-      }
-    } catch (refreshError) {
-      console.error('Failed to refresh token:', refreshError)
-    }
-
-    authStore.logout()
-    return Promise.reject(error)
-  },
-)

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-import type { BookReview, PaginatedBookReviewList } from '@/types/clubs'
+import { api } from '@/api'
+import type { BookReview, ClubsReviewsListParams, PatchedBookReview } from '@/api/data-contracts'
 
 interface ReviewsState {
   reviews: BookReview[]
@@ -36,14 +36,12 @@ export const useReviewsStore = defineStore('reviews', {
       this.isLoading = true
       this.error = null
       try {
-        const response = await axios.get<PaginatedBookReviewList>(
-          `/api/v1/clubs/reviews/?page=${page}&page_size=${pageSize}`,
-        )
+        const response = await api.api.clubsReviewsList({ page, page_size: pageSize })
         this.reviews = response.data.results
         this.pagination = {
           count: response.data.count,
-          next: response.data.next,
-          previous: response.data.previous,
+          next: response.data.next ?? null,
+          previous: response.data.previous ?? null,
           currentPage: page,
           pageSize: pageSize,
         }
@@ -59,9 +57,8 @@ export const useReviewsStore = defineStore('reviews', {
       this.isLoading = true
       this.error = null
       try {
-        const response = await axios.get<PaginatedBookReviewList>(
-          `/api/v1/clubs/reviews/?club=${clubId}&page=${page}&page_size=${pageSize}`,
-        )
+        const params: ClubsReviewsListParams = { club: clubId, page, page_size: pageSize }
+        const response = await api.api.clubsReviewsList(params)
         this.clubReviews = {
           ...this.clubReviews,
           [clubId]: response.data.results,
@@ -78,10 +75,12 @@ export const useReviewsStore = defineStore('reviews', {
       this.isLoading = true
       this.error = null
       try {
-        const response = await axios.post<BookReview>('/api/v1/clubs/reviews/', {
+        const response = await api.api.clubsReviewsCreate({
           club: clubId,
-          ...reviewData,
-        })
+          review: reviewData.review || '',
+          assessment: reviewData.assessment || 5,
+          readPages: reviewData.readPages || 0,
+        } as unknown as BookReview)
 
         if (this.clubReviews[clubId]) {
           this.clubReviews[clubId] = [response.data, ...this.clubReviews[clubId]]
@@ -103,9 +102,9 @@ export const useReviewsStore = defineStore('reviews', {
       this.isLoading = true
       this.error = null
       try {
-        const response = await axios.patch<BookReview>(
-          `/api/v1/clubs/reviews/${reviewId}/`,
-          reviewData,
+        const response = await api.api.clubsReviewsPartialUpdate(
+          reviewId,
+          reviewData as unknown as PatchedBookReview,
         )
 
         Object.keys(this.clubReviews).forEach((clubId) => {
@@ -129,7 +128,7 @@ export const useReviewsStore = defineStore('reviews', {
       this.isLoading = true
       this.error = null
       try {
-        await axios.delete(`/api/v1/clubs/reviews/${reviewId}/`)
+        await api.api.clubsReviewsDestroy(reviewId)
 
         if (this.clubReviews[clubId]) {
           this.clubReviews[clubId] = this.clubReviews[clubId].filter((r) => r.id !== reviewId)

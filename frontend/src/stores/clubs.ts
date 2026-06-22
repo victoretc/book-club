@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-import type { Club, PaginatedClubList } from '@/types/clubs'
+import { api } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import type { Club, ClubsListParams, PatchedClub } from '@/api/data-contracts'
 
 interface ClubsState {
   clubs: Club[]
@@ -34,23 +35,18 @@ export const useClubsStore = defineStore('clubs', {
   }),
 
   actions: {
-    async _fetchClubsWithParams(params: Record<string, string | number>, errorMessage: string) {
+    async _fetchClubsWithParams(params: ClubsListParams, errorMessage: string) {
       this.isLoading = true
       this.error = null
       try {
-        const searchParams = new URLSearchParams(
-          Object.entries(params).map(([k, v]) => [k, String(v)]),
-        )
-        const response = await axios.get<PaginatedClubList>(
-          `/api/v1/clubs/?${searchParams.toString()}`,
-        )
+        const response = await api.api.clubsList(params)
         this.clubs = response.data.results
         this.pagination = {
           count: response.data.count,
-          next: response.data.next,
-          previous: response.data.previous,
-          currentPage: (params.page as number) ?? 1,
-          pageSize: (params.page_size as number) ?? 10,
+          next: response.data.next ?? null,
+          previous: response.data.previous ?? null,
+          currentPage: params.page ?? 1,
+          pageSize: params.page_size ?? 10,
         }
       } catch (error) {
         this.error = errorMessage
@@ -95,7 +91,7 @@ export const useClubsStore = defineStore('clubs', {
     ) {
       this.activeFilter = type
       this.activeSearch = null
-      const params: Record<string, string | number> = { page, page_size: pageSize }
+      const params: ClubsListParams = { page, page_size: pageSize }
       if (type !== 'all') params.membership = type
       await this._fetchClubsWithParams(params, 'Ошибка при фильтрации клубов')
     },
@@ -124,8 +120,7 @@ export const useClubsStore = defineStore('clubs', {
 
     async joinClub(clubId: number) {
       try {
-        await axios.post(`/api/v1/clubs/${clubId}/members/me/`)
-        await this._fetchWithCurrentParams(this.pagination.currentPage, this.pagination.pageSize)
+        await api.api.clubsMembersMeCreate(clubId)
       } catch (error) {
         console.error('Error joining club:', error)
         throw error
@@ -134,11 +129,50 @@ export const useClubsStore = defineStore('clubs', {
 
     async leaveClub(clubId: number) {
       try {
-        await axios.delete(`/api/v1/clubs/${clubId}/members/me/`)
-        await this._fetchWithCurrentParams(this.pagination.currentPage, this.pagination.pageSize)
+        await api.api.clubsMembersMeDestroy(clubId)
       } catch (error) {
         console.error('Error leaving club:', error)
         throw error
+      }
+    },
+
+    isCurrentUserMember(club: Club): boolean {
+      const authStore = useAuthStore()
+      return authStore.user ? club.members.some(m => m.id === Number(authStore.user!.id)) : false
+    },
+
+    isCurrentUserOwner(club: Club): boolean {
+      const authStore = useAuthStore()
+      return authStore.user ? Number(club.owner) === Number(authStore.user.id) : false
+    },
+
+    async createClub(data: Partial<Club>) {
+      this.isLoading = true
+      this.error = null
+      try {
+        const response = await api.api.clubsCreate(data as Club)
+        return response.data
+      } catch (error) {
+        this.error = 'Ошибка при создании клуба'
+        console.error('Error creating club:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updateClub(clubId: number, data: Partial<Club>) {
+      this.isLoading = true
+      this.error = null
+      try {
+        const response = await api.api.clubsUpdate(clubId, data as Club)
+        return response.data
+      } catch (error) {
+        this.error = 'Ошибка при обновлении клуба'
+        console.error('Error updating club:', error)
+        throw error
+      } finally {
+        this.isLoading = false
       }
     },
 
@@ -146,7 +180,7 @@ export const useClubsStore = defineStore('clubs', {
       this.isLoading = true
       this.error = null
       try {
-        const response = await axios.get(`/api/v1/clubs/${clubId}/`)
+        const response = await api.api.clubsRetrieve(clubId)
         return response.data
       } catch (error) {
         this.error = 'Не удалось загрузить информацию о клубе'

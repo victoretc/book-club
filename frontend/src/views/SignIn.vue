@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-import { AxiosError } from 'axios'
+import { useRouter, useRoute } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const step = ref<'email' | 'code'>('email')
-const email = ref('')
-const code = ref('')
+const form = reactive({
+  email: '',
+  code: '',
+})
 const error = ref('')
 const isLoading = ref(false)
 
@@ -18,11 +20,11 @@ async function requestCodeHandler() {
   isLoading.value = true
   error.value = ''
   try {
-    await authStore.requestCode(email.value)
+    await authStore.requestCode(form.email)
     step.value = 'code'
   } catch (e) {
-    const err = e as AxiosError<{ detail?: string }>
-    error.value = err.response?.data?.detail || 'Ошибка при отправке кода'
+    const err = e as { detail?: string }
+    error.value = err.detail || 'Ошибка при отправке кода'
   } finally {
     isLoading.value = false
   }
@@ -32,20 +34,16 @@ async function verifyCodeHandler() {
   isLoading.value = true
   error.value = ''
   try {
-    await authStore.verifyCode(email.value, code.value)
-    if (authStore.pendingClubJoin) {
-      router.push({ name: 'club-details', params: { id: authStore.pendingClubJoin } })
-      authStore.clearPendingClubJoin()
+    await authStore.verifyCode(form.email, form.code)
+    const joinClubId = route.query.join
+    if (joinClubId) {
+      router.push({ name: 'club-details', params: { id: Number(joinClubId) } })
     } else {
       router.push('/')
     }
   } catch (e) {
-    const err = e as AxiosError<{ detail?: string }>
-    if (err.response?.status === 429) {
-      error.value = 'Слишком много попыток. Попробуйте позже.'
-    } else {
-      error.value = err.response?.data?.detail || 'Неверный код подтверждения'
-    }
+    const err = e as { detail?: string }
+    error.value = err.detail || 'Неверный код подтверждения'
   } finally {
     isLoading.value = false
   }
@@ -67,7 +65,7 @@ function backToEmail() {
         <div class="field">
           <label for="email">Электропочта *</label>
           <input
-            v-model="email"
+            v-model="form.email"
             type="email"
             id="email"
             required
@@ -86,7 +84,7 @@ function backToEmail() {
         <div class="field">
           <label for="code">Код из письма *</label>
           <input
-            v-model="code"
+            v-model="form.code"
             type="text"
             id="code"
             required
@@ -98,7 +96,7 @@ function backToEmail() {
             autocomplete="one-time-code"
           />
         </div>
-        <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading || code.length !== 4" data-testid="verify-button">
+        <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading || form.code.length !== 4" data-testid="verify-button">
           Подтвердить
         </BaseButton>
         <p v-if="error" class="error-msg">{{ error }}</p>

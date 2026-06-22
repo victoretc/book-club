@@ -14,7 +14,8 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "generate-api": "npx swagger-typescript-api generate --path \"http://localhost:8000/api/v1/docs/schema/?format=json\" --output ./src/api"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

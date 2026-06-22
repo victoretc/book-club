@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { useForm, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
-import { useAuthStore } from '@/stores/auth'
+import { useClubsStore } from '@/stores/clubs'
 import BaseButton from '@/components/BaseButton.vue'
 
-const props = defineProps({
-  clubId: {
-    type: Number,
-    default: null,
-  },
+interface Props {
+  clubId?: number | null
+}
+const props = withDefaults(defineProps<Props>(), {
+  clubId: null,
 })
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits<{
+  submit: []
+}>()
+
 const router = useRouter()
+const clubsStore = useClubsStore()
 const isLoading = ref(false)
 const errorMsg = ref('')
 
@@ -34,46 +37,40 @@ const { handleSubmit, setValues } = useForm({
   validationSchema,
 })
 
-onMounted(async () => {
-  if (props.clubId) {
-    isLoading.value = true
-    try {
-      const response = await axios.get(`/api/v1/clubs/${props.clubId}/`)
-      const authStore = useAuthStore()
-      if (authStore.user && Number(response.data.owner?.id) !== Number(authStore.user.id)) {
-        router.push({ name: 'clubs' })
-        return
-      }
-      setValues({
-        bookTitle: response.data.bookTitle,
-        bookAuthors: response.data.bookAuthors,
-        publicationYear: response.data.publicationYear,
-        description: response.data.description,
-        telegramChatLink: response.data.telegramChatLink,
-      })
-    } catch {
-      router.push({ name: 'clubs' })
-    } finally {
-      isLoading.value = false
-    }
+async function loadClub() {
+  if (!props.clubId) return
+  isLoading.value = true
+  try {
+    const club = await clubsStore.fetchClub(props.clubId)
+    setValues({
+      bookTitle: club.bookTitle,
+      bookAuthors: club.bookAuthors,
+      publicationYear: club.publicationYear,
+      description: club.description,
+      telegramChatLink: club.telegramChatLink,
+    })
+  } catch {
+    router.push({ name: 'clubs' })
+  } finally {
+    isLoading.value = false
   }
-})
+}
+
+onMounted(loadClub)
 
 const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true
   errorMsg.value = ''
   try {
     if (props.clubId) {
-      await axios.put(`/api/v1/clubs/${props.clubId}/`, values)
+      await clubsStore.updateClub(props.clubId, values)
     } else {
-      await axios.post('/api/v1/clubs/', values)
+      await clubsStore.createClub(values)
     }
     emit('submit')
     router.push({ name: 'clubs' })
-  } catch (err) {
-    if (axios.isAxiosError(err) && err.response?.data) {
-      errorMsg.value = 'Ошибка при сохранении. Проверьте введенные данные.'
-    }
+  } catch {
+    errorMsg.value = 'Ошибка при сохранении. Проверьте введенные данные.'
   } finally {
     isLoading.value = false
   }

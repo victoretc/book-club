@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClubsStore } from '@/stores/clubs'
 import { useAuthStore } from '@/stores/auth'
+import type { Club, Member } from '@/api/data-contracts'
 import ClubFilters from '@/components/ClubFilters.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import { memberReadingText } from '@/utils/plural'
-import type { Club } from '@/types/clubs'
-import type { User } from '@/types/users'
 
 const clubsStore = useClubsStore()
 if (clubsStore.clubs.length === 0) {
@@ -16,36 +15,15 @@ if (clubsStore.clubs.length === 0) {
 const authStore = useAuthStore()
 const router = useRouter()
 
-const renderKey = ref(0)
-
-watch(() => clubsStore.clubs, () => {
-  renderKey.value++
-}, { deep: true })
-
 onMounted(async () => {
   await clubsStore.fetchClubs()
-
-  if (authStore.isAuthenticated && authStore.pendingClubJoin) {
-    const clubId = authStore.pendingClubJoin
-    try {
-      await clubsStore.joinClub(clubId)
-      router.push(`/clubs/${clubId}`)
-    } catch {
-      console.error('Ошибка при присоединении')
-    } finally {
-      authStore.clearPendingClubJoin()
-    }
-  }
 })
 
-const isMember = (club: Club) => {
-  return authStore.user ? club.members.some(m => m.id === authStore.user!.id) : false
-}
+const isMember = (club: Club) => clubsStore.isCurrentUserMember(club)
 
 const joinClub = async (clubId: number) => {
   if (!authStore.isAuthenticated) {
-    authStore.setPendingClubJoin(clubId)
-    router.push('/signin')
+    router.push({ path: '/signin', query: { join: String(clubId) } })
     return
   }
 
@@ -63,7 +41,7 @@ const openClubPage = (clubId: number) => {
 
 const avatarColors = ['#F1FFD6', '#A0EC06', '#42CF71', '#FFE4B5', '#DDA0DD', '#87CEEB']
 
-const getInitials = (m: User): string => {
+const getInitials = (m: Member): string => {
   if (m.firstName && m.lastName) return (m.firstName[0] + m.lastName[0]).toUpperCase()
   if (m.firstName) return m.firstName[0].toUpperCase()
   if (m.lastName) return m.lastName[0].toUpperCase()
@@ -105,7 +83,7 @@ const memberInitials = (club: Club) => {
       <div v-else-if="clubsStore.clubs.length === 0" key="empty" class="no-results">
         <img src="@/assets/images/not-found.png" alt="Ничего не найдено" class="not-found-img" />
       </div>
-      <div v-else :key="'list-' + renderKey" class="clubs-list">
+      <div v-else class="clubs-list">
         <div
           v-for="club in clubsStore.clubs"
           :key="club.id"

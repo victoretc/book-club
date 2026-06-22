@@ -2,13 +2,8 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
-
-axios.defaults.xsrfCookieName = 'csrftoken'
-axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+import { setTokens } from '@/api'
 
 const app = createApp(App)
 
@@ -18,7 +13,7 @@ app.use(router)
 const authStore = useAuthStore()
 authStore.loadState()
 if (authStore.isAuthenticated && authStore.accessToken) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.accessToken}`
+  setTokens(authStore.accessToken, authStore.refreshToken)
   authStore.fetchUser().catch(() => authStore.logout())
 }
 

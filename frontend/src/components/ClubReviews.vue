@@ -2,22 +2,20 @@
 import { ref, onMounted, computed, nextTick } from 'vue'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
-import type { BookReview } from '@/types/clubs'
+import type { BookReview, Member } from '@/api/data-contracts'
+import { getStars, formatDate } from '@/utils/format'
 import BaseButton from '@/components/BaseButton.vue'
-
-import type { User } from '@/types/users'
 
 const props = defineProps<{
   clubId: number
-  clubMembers: User[]
+  clubMembers: Member[]
   clubOwner?: number
 }>()
 
 const reviewsStore = useReviewsStore()
 const authStore = useAuthStore()
 
-const isCreating = ref(false)
-const isEditing = ref(false)
+const formState = ref<'idle' | 'creating' | 'editing'>('idle')
 const editingReviewId = ref<number | null>(null)
 const isLoading = ref(false)
 const error = ref('')
@@ -55,8 +53,7 @@ const loadReviews = async () => {
 }
 
 const startCreate = () => {
-  isCreating.value = true
-  isEditing.value = false
+  formState.value = 'creating'
   editingReviewId.value = null
   reviewForm.value = { review: '', assessment: 5, readPages: 0 }
   error.value = ''
@@ -67,8 +64,7 @@ const startCreate = () => {
 }
 
 const startEdit = (review: BookReview) => {
-  isEditing.value = true
-  isCreating.value = false
+  formState.value = 'editing'
   editingReviewId.value = review.id
   reviewForm.value = {
     review: review.review,
@@ -83,8 +79,7 @@ const startEdit = (review: BookReview) => {
 }
 
 const cancelForm = () => {
-  isCreating.value = false
-  isEditing.value = false
+  formState.value = 'idle'
   editingReviewId.value = null
   error.value = ''
   success.value = ''
@@ -114,7 +109,7 @@ const createReview = async () => {
 
     userReview.value = newReview
     success.value = 'Отзыв успешно создан'
-    isCreating.value = false
+    formState.value = 'idle'
   } catch {
     error.value = 'Ошибка при создании отзыва'
   } finally {
@@ -146,7 +141,7 @@ const updateReview = async () => {
     }
 
     success.value = 'Отзыв успешно обновлен'
-    isEditing.value = false
+    formState.value = 'idle'
     editingReviewId.value = null
   } catch {
     error.value = 'Ошибка при обновлении отзыва'
@@ -171,23 +166,7 @@ const deleteReview = async (reviewId: number) => {
   }
 }
 
-const formatDate = (dateString?: string) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
-const getStars = (assessment: number) => {
-  return '★'.repeat(assessment) + '☆'.repeat(5 - assessment)
-}
-
-onMounted(() => {
-  loadReviews()
-})
+onMounted(loadReviews)
 </script>
 
 <template>
@@ -195,7 +174,7 @@ onMounted(() => {
     <div class="reviews-head">
       <h2 class="reviews-title">Отзывы участников</h2>
       <BaseButton
-        v-if="canReview && !isCreating && !isEditing && !userReview"
+        v-if="canReview && formState === 'idle' && !userReview"
         variant="primary"
         @click="startCreate"
       >
@@ -203,9 +182,9 @@ onMounted(() => {
       </BaseButton>
     </div>
 
-    <div v-if="isCreating || isEditing" ref="formRef" class="review-form">
-      <h3 class="form-title">{{ isCreating ? 'Новый отзыв' : 'Редактирование отзыва' }}</h3>
-      <form @submit.prevent="isCreating ? createReview() : updateReview()">
+    <div v-if="formState !== 'idle'" ref="formRef" class="review-form">
+      <h3 class="form-title">{{ formState === 'creating' ? 'Новый отзыв' : 'Редактирование отзыва' }}</h3>
+      <form @submit.prevent="formState === 'creating' ? createReview() : updateReview()">
         <div class="form-group">
           <label for="assessment">Оценка</label>
           <input
@@ -248,7 +227,7 @@ onMounted(() => {
 
         <div class="form-actions">
           <BaseButton type="submit" variant="primary" :loading="isLoading" :disabled="isLoading">
-            {{ isCreating ? 'Опубликовать' : 'Сохранить' }}
+            {{ formState === 'creating' ? 'Опубликовать' : 'Сохранить' }}
           </BaseButton>
           <BaseButton variant="outline" @click="cancelForm" :disabled="isLoading">
             Отмена
@@ -279,7 +258,7 @@ onMounted(() => {
 
         <div class="review-foot">
           <span class="review-date">{{ formatDate(review.created) }}</span>
-          <div v-if="canEditReview(review) && !isEditing && !isCreating" class="review-actions">
+          <div v-if="canEditReview(review) && formState === 'idle'" class="review-actions">
             <BaseButton variant="ghost" @click="startEdit(review)">Редактировать</BaseButton>
             <BaseButton variant="danger" @click="deleteReview(review.id)">Удалить</BaseButton>
           </div>
@@ -287,7 +266,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-else-if="!isCreating && !isLoading" class="empty">
+    <div v-else-if="formState === 'idle' && !isLoading" class="empty">
       Пока нет отзывов. Будьте первым!
     </div>
 

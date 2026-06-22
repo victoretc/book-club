@@ -2,36 +2,23 @@
 import { ref, onMounted, computed } from 'vue'
 import { useReviewsStore } from '@/stores/reviews'
 import { useRouter } from 'vue-router'
+import { getStars, formatDate } from '@/utils/format'
 import BaseButton from '@/components/BaseButton.vue'
 
 const reviewsStore = useReviewsStore()
 const router = useRouter()
 
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = 10
 
 const totalPages = computed(() => {
-  return Math.ceil(reviewsStore.pagination.count / pageSize.value)
+  return Math.ceil(reviewsStore.pagination.count / pageSize)
 })
-
-const formatDate = (dateString?: string) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
-const getStars = (assessment: number) => {
-  return '★'.repeat(assessment) + '☆'.repeat(5 - assessment)
-}
 
 const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
-    reviewsStore.fetchReviews(page, pageSize.value)
+    reviewsStore.fetchReviews(page, pageSize)
   }
 }
 
@@ -39,9 +26,7 @@ const goToClub = (clubId: number) => {
   router.push(`/clubs/${clubId}`)
 }
 
-onMounted(() => {
-  reviewsStore.fetchReviews(currentPage.value, pageSize.value)
-})
+onMounted(() => reviewsStore.fetchReviews(currentPage.value, pageSize))
 </script>
 
 <template>
@@ -68,10 +53,10 @@ onMounted(() => {
         <div class="review-header">
           <div class="reviewer-info">
             <span class="reviewer-avatar">
-              {{ review.username?.[0] || '?' }}
+              {{ review.user.username?.[0] || '?' }}
             </span>
             <div class="reviewer-details">
-              <span class="reviewer-name">{{ review.username || 'Пользователь' }}</span>
+              <span class="reviewer-name">{{ review.user.username || 'Пользователь' }}</span>
               <span class="club-id">Клуб #{{ review.club }}</span>
             </div>
           </div>

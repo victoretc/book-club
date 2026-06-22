@@ -6,7 +6,7 @@ import { useClubsStore } from '@/stores/clubs'
 import { pluralize, reviewLabel } from '@/utils/plural'
 import ClubReviews from '@/components/ClubReviews.vue'
 import BaseButton from '@/components/BaseButton.vue'
-import type { Club } from '@/types/clubs'
+import type { Club } from '@/api/data-contracts'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,7 +18,21 @@ const club = ref<Club | null>(null)
 const isLoading = ref(false)
 const error = ref('')
 
-const fetchClub = async () => {
+const isMember = computed(() => {
+  return club.value ? clubsStore.isCurrentUserMember(club.value) : false
+})
+
+const isOwner = computed(() => {
+  return club.value ? clubsStore.isCurrentUserOwner(club.value) : false
+})
+
+function openTelegram() {
+  if (club.value?.telegramChatLink) {
+    window.open(club.value.telegramChatLink, '_blank', 'noopener,noreferrer')
+  }
+}
+
+async function fetchClub() {
   isLoading.value = true
   error.value = ''
   try {
@@ -30,7 +44,7 @@ const fetchClub = async () => {
   }
 }
 
-const joinClub = async () => {
+async function handleJoin() {
   try {
     await clubsStore.joinClub(Number(route.params.id))
     await fetchClub()
@@ -41,7 +55,7 @@ const joinClub = async () => {
 
 const isLeaving = ref(false)
 
-const leaveClub = async () => {
+async function handleLeave() {
   isLeaving.value = true
   try {
     await clubsStore.leaveClub(Number(route.params.id))
@@ -52,23 +66,7 @@ const leaveClub = async () => {
   }
 }
 
-const openTelegram = () => {
-  if (club.value?.telegramChatLink) {
-    window.open(club.value.telegramChatLink, '_blank')
-  }
-}
-
-const isMember = computed(() => {
-  return authStore.user?.id && club.value?.members.some(m => m.id === authStore.user!.id)
-})
-
-const isOwner = computed(() => {
-  return authStore.user?.id === club.value?.owner?.id
-})
-
-onMounted(() => {
-  fetchClub()
-})
+onMounted(fetchClub)
 </script>
 
 <template>
@@ -127,7 +125,7 @@ onMounted(() => {
           <BaseButton
             v-if="!isMember && !isOwner"
             variant="primary"
-            @click="joinClub"
+            @click="handleJoin"
           >
             Присоединиться
           </BaseButton>
@@ -137,7 +135,7 @@ onMounted(() => {
             variant="danger"
             :loading="isLeaving"
             :disabled="isLeaving"
-            @click="leaveClub"
+            @click="handleLeave"
           >
             Покинуть клуб
           </BaseButton>
@@ -154,7 +152,7 @@ onMounted(() => {
 
       <div class="card-divider" />
 
-      <ClubReviews :club-id="club.id" :club-members="club.members" :club-owner="club.owner?.id" />
+      <ClubReviews :club-id="club.id" :club-members="club.members" :club-owner="club.owner" />
     </div>
   </div>
 </template>

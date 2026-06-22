@@ -49,27 +49,4 @@ export class Select extends Component {
       return await selectedOption.textContent() ?? '';
     });
   }
-
-  async shouldHaveSelectedOption(expectedText: string, locatorProps: LocatorProps = {}): Promise<void> {
-    await test.step(`${this.typeOfUpper} "${this.componentName}" should have selected option "${expectedText}"`, async () => {
-      const actualText = await this.getSelectedOption(locatorProps);
-      await expect(actualText).toContain(expectedText);
-    });
-  }
-
-  async shouldHaveOptionsCount(expectedCount: number, locatorProps: LocatorProps = {}): Promise<void> {
-    await test.step(`${this.typeOfUpper} "${this.componentName}" should have ${expectedCount} options`, async () => {
-      await this.openDropdown(locatorProps);
-      const options = this.getLocator(locatorProps);
-      await expect(options).toHaveCount(expectedCount);
-    });
-  }
-
-  async shouldHaveNoResultsMessage(locatorProps: LocatorProps = {}): Promise<void> {
-    await test.step(`${this.typeOfUpper} "${this.componentName}" should show "no results" message`, async () => {
-      await this.openDropdown(locatorProps);
-      const message = this.getLocator(locatorProps);
-      await expect(message).toBeVisible();
-    });
-  }
 }

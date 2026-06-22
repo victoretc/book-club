@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppHeader from '@/components/AppHeader.vue'
+import ToastNotification from '@/components/ToastNotification.vue'
 </script>
 
 <template>
@@ -8,6 +9,7 @@ import AppHeader from '@/components/AppHeader.vue'
     <main>
       <router-view />
     </main>
+    <ToastNotification />
   </div>
 </template>
 
