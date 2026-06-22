@@ -1,0 +1,8 @@
+from app.models import DefaultModel, TimestampedModel, models
+
+
+__all__ = [
+    "DefaultModel",
+    "TimestampedModel",
+    "models",
+]

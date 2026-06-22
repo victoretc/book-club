@@ -1,0 +1,79 @@
+---
+
+x-default-build-args: &default-build-args
+  PYTHON_VERSION: "3.12"
+
+x-default-environment: &default-environment
+  BASE_URL: http://localhost
+  DATABASE_URL: postgres://postgres@postgres:5432/postgres
+  EMAIL_HOST: mailpit
+  EMAIL_PORT: "1025"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    networks:
+      - bookclub
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      target: web
+      args: *default-build-args
+    environment: *default-environment
+    networks:
+      - bookclub
+    depends_on:
+      mailpit:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  mailpit:
+    image: axllent/mailpit:latest
+    networks:
+      - bookclub
+    ports:
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    networks:
+      - bookclub
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+      -c autovacuum=off
+      -c fsync=off
+      -c synchronous_commit=off
+      -c full_page_writes=off
+      -c work_mem=12MB
+      -c max_connections=10
+      -c max_wal_senders=0
+
+networks:
+  bookclub:
+    driver: bridge
+
+volumes:
+  postgres-data:

@@ -1,0 +1,13 @@
+# Production on self-hosted runner: expose app ports for external nginx.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+services:
+  frontend:
+    ports:
+      - "8100:80"
+
+  backend:
+    ports:
+      - "8000:8000"
+    environment:
+      BASE_URL: https://book-club.qa.guru

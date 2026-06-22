@@ -1,0 +1,28 @@
+name: setup-project
+description: 'Setup uv, python, install and cache deps, set default env variables'
+outputs:
+  python-version:
+    description: 'Python version'
+    value: ${{ steps.setup-python.outputs.python-version }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        pyproject-file: "./backend/pyproject.toml"
+        enable-cache: true
+        cache-dependency-glob: './backend/uv.lock'
+
+    - name: setup python
+      uses: actions/setup-python@v5
+      id: setup-python
+      with:
+        python-version-file: './backend/pyproject.toml'
+
+    - name: Install Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.44.0

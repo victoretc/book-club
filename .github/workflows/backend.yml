@@ -1,0 +1,50 @@
+name: Testing Backend
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+defaults:
+  run:
+    working-directory: ./backend
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-project
+      - name: install dev dependencies
+        run: |
+          task install-dev-deps
+        shell: bash
+      - run: task lint
+        
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-project
+      - name: install dev dependencies
+        run: |
+          task install-dev-deps
+        shell: bash
+      - name: Start services
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+        working-directory: .
+      - name: Wait for Postgres
+        run: |
+          until docker compose -f docker-compose.yml -f docker-compose.test.yml exec -T postgres pg_isready -U postgres; do sleep 2; done
+        working-directory: .
+      - name: Wait for Backend
+        run: |
+          until curl -fsS "http://127.0.0.1:8000/api/v1/healthchecks/" >/dev/null; do sleep 2; done
+        working-directory: .
+      - run: uv run pytest --create-db --reuse-db --exitfirst --alluredir=allure-results

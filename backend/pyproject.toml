@@ -1,0 +1,270 @@
+[project]
+name = "book_club"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.12, <3.13"
+dependencies = [
+    "bcrypt>=4.3.0",
+    "celery==5.4.0",
+    "django-axes>=7.0.2",
+    "django-cors-headers>=4.7.0",
+    "django-environ>=0.12.0",
+    "django-filter>=25.1",
+    "django-healthchecks>=1.5.0",
+    "django-ipware>=7.0.1",
+    "django-prometheus>=2.3.1",
+    "django-split-settings>=1.3.2",
+    "django-storages>=1.14.6",
+    "django>=5.2,<6.0",
+    "djangorestframework-camel-case>=1.4.2",
+    "djangorestframework-simplejwt[crypto]>=5.5.0",
+    "djangorestframework>=3.15.2",
+    "drf-orjson-renderer>=1.7.3",
+    "drf-spectacular[sidecar]>=0.28.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-exporter-otlp>=1.20.0",
+    "opentelemetry-instrumentation-django>=0.41b0",
+    "opentelemetry-instrumentation-psycopg>=0.41b0",
+    "opentelemetry-sdk>=1.20.0",
+    "pillow>=11.2.1",
+    "psycopg[binary]>=3.2.6",
+    "pyroscope-io>=0.8.7",
+    "python-dotenv>=1.1.1",
+    "redis>=5.2.1",
+    "sentry-sdk>=2.27.0",
+    "whitenoise>=6.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "allure-pytest>=2.14.3",
+    "django-stubs>=5.2.0",
+    "djangorestframework-stubs>=3.16.0",
+    "dotenv-linter>=0.7.0",
+    "factory-boy>=3.3.3",
+    "faker>=12.0.1",
+    "freezegun>=1.5.1",
+    "ipython>=9.2.0",
+    "jedi>=0.19.2",
+    "jinja2>=3.1.6",
+    "mypy>=1.15.0",
+    "pymarkdownlnt>=0.9.29",
+    "pytest-deadfixtures>=2.2.1",
+    "pytest-django>=4.11.1",
+    "pytest-env>=1.1.5",
+    "pytest-factoryboy>=2.8.0",
+    "pytest-freezer>=0.4.9",
+    "pytest-mock>=3.14.0",
+    "pytest-randomly>=3.16.0",
+    "pytest-xdist>=3.6.1",
+    "restcodegen>=1.1.0",
+    "toml-sort>=0.24.2",
+    "types-factory-boy>=0.4.1",
+    "types-freezegun>=1.1.10",
+    "types-pillow>=10.2.0.20240822",
+]
+
+[tool.uv]
+required-version = ">=0.6.0"
+
+[tool.pymarkdown.plugins.md013]
+enabled = false
+
+[tool.pymarkdown.plugins.md045]
+enabled = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "app.settings"
+env = [
+    "AXES_ENABLED = False",
+    "CI = 1",
+    "DISABLE_THROTTLING = True",
+]
+# Pattern: `action:message:category:module:line` (https://docs.python.org/3/library/warnings.html#describing-warning-filters)
+# Example: `ignore:.*regex of the warning message.*:DeprecationWarning:rest_framework_jwt:`
+filterwarnings = [
+    "ignore::pytest.PytestReturnNotNoneWarning",
+]
+pythonpath = ["src"]
+testpaths = ["src"]
+python_files = ["test*.py"]
+
+[tool.ruff]
+exclude = ["__pycache__", "migrations"]
+line-length = 160
+src = ["src"]
+
+[tool.ruff.lint]
+ignore = [
+    "A001",  # variable `{}` is shadowing a Python builtin
+    "A002",  # argument `{}` is shadowing a Python builtin
+    "A003",  # class attribute `{}` is shadowing a Python builtin
+    "A005",
+    "ANN401",  # dynamically typed expressions (typing.Any) are disallowed in `{}`
+    "ARG002",  # unused method argument: `{}`
+    "ARG005",  # unused lambda argument: `{}`
+    "B018",  # found useless expression. Either assign it to a variable or remove it
+    "B904",  # within an `except` clause, raise exceptions with [...]
+    "C408",  # unnecessary `dict` call (rewrite as a literal)
+    "COM812",  # trailing comma missing; may not be compatible with ruff formatter
+    "D100",  # missing docstring in public module
+    "D101",  # missing docstring in public class
+    "D102",  # missing docstring in public method
+    "D103",  # missing docstring in public function
+    "D104",  # missing docstring in public package
+    "D105",  # missing docstring in magic method
+    "D106",  # missing docstring in public nested class
+    "D107",  # missing docstring in `__init__`
+    "D200",  # one-line docstring should fit on one line
+    "D202",  # no blank lines allowed after function docstring (found {})
+    "D203",  # 1 blank line required before class docstring
+    "D205",  # 1 blank line required between summary line and description
+    "D209",  # multi-line docstring closing quotes should be on a separate line
+    "D210",  # no whitespaces allowed surrounding docstring text
+    "D212",  # multi-line docstring summary should start at the first line
+    "D213",  # multi-line docstring summary should start at the second line
+    "D400",  # first line should end with a period
+    "D401",  # first line of docstring should be in imperative mood: "{}"
+    "D404",  # first word of the docstring should not be "This"
+    "D415",  # first line should end with a period, question mark, or exclamation point
+    "D417",
+    "DTZ001",  # the use of `datetime.datetime()` without `tzinfo` argument is not allowed
+    "E501",  # line too long ({} > {})
+    "EM101",  # exception must not use a string literal, assign to variable first
+    "EM102",  # exception must not use an f-string literal, assign to variable first
+    "FBT001",  # boolean-typed position argument in function definition
+    "FBT002",  # boolean default position argument in function definition
+    "FBT003",  # boolean positional value in function call
+    "INP001",  # file `{}` is part of an implicit namespace package. Add an `__init__.py`
+    "INT001",  # f-string is resolved before function call; consider `_("string %s") % arg`
+    "ISC001",  # implicitly concatenated string literals on one line; may not be compatible with ruff formatter
+    "N802",  # function name `{}` should be lowercase
+    "N803",  # argument name `{}` should be lowercase
+    "N804",  # first argument of a class method should be named `cls`
+    "N806",  # variable `{}` in function should be lowercase
+    "N812",  # lowercase `{}` imported as non-lowercase `{}`
+    "N818",  # exception name `{}` should be named with an Error suffix
+    "N999",  # invalid module name: '{}'
+    "PERF401",  # use a list comprehension to create a transformed list
+    "PLC0415",
+    "PTH123",
+    "RET501",  # do not explicitly `return None` in function if it is the only possible return value
+    "RET502",  # do not implicitly `return None` in function able to return non-`None` value
+    "RET503",  # missing explicit `return` at the end of function able to return non-`None` value
+    "RET504",
+    "RUF001",
+    "RUF012",  # mutable class attributes should be annotated with `typing.ClassVar`
+    "RUF015",  # prefer next({iterable}) over single element slice
+    "S101",  # use of `assert` detected
+    "S311",  # standard pseudo-random generators are not suitable for cryptographic purposes
+    "S324",  # probable use of insecure hash functions in `{}`: `{}`
+    "SIM102",  # use a single `if` statement instead of nested `if` statements
+    "SIM108",  # use ternary operator `{}` instead of `if`-`else`-block
+    "SIM113",  # use enumerate instead of manually incrementing a counter
+    "TC001",  # move application import `{}` into a type-checking block
+    "TC002",  # move third-party import `{}` into a type-checking block
+    "TC003",  # move standard library import `{}` into a type-checking block
+    "TRY003",  # avoid specifying long messages outside the exception class
+    "TRY300",  # consider moving this statement to an `else` block
+    "UP007",
+]
+select = ["ALL"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["src"]
+lines-after-imports = 2
+
+[tool.ruff.lint.per-file-ignores]
+"*/factory.py" = [
+    "ANN",  # flake8-annotations
+    "ARG001",
+]
+"*/fixtures.py" = [
+    "ANN",  # flake8-annotations
+    "ARG001",
+]
+"*/management/*" = [
+    "ANN",  # flake8-annotations
+]
+"*/migrations/*" = [
+    "ANN",  # flake8-annotations
+]
+"*/tests/*" = [
+    "ANN",  # flake8-annotations
+    "ARG001",
+    "PLR2004",
+]
+"src/app/conf/*" = [
+    "ANN",  # flake8-annotations
+]
+"src/app/testing/*" = [
+    "ANN",  # flake8-annotations
+    "ARG001",
+    "PLR2004",
+]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+files = "src"
+namespace_packages = true
+explicit_package_bases = true
+warn_no_return = false
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+no_implicit_reexport = true
+strict_equality = true
+warn_unreachable = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+exclude = [".*/clients/.*", "migrations/"]
+plugins = [
+    "mypy_django_plugin.main",
+    "mypy_drf_plugin.main",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "*.management.*",
+    "*.tests.*",
+    "app.testing.api.*",
+]
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "allure_pytest.*",
+    "axes.*",
+    "celery.*",
+    "curlify2.*",
+    "django_filters.*",
+    "djangorestframework_camel_case.*",
+    "drf_orjson_renderer.*",
+    "ipware.*",
+    "mixer.*",
+    "restcodegen.*",
+    "swagger_coverage_tool.*",
+]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "app.settings"
+strict_settings = false
+
+[tool.tomlsort]
+in_place = true
+no_sort_tables = true  # preserves the manual order of tables (like [project], [dependency-groups], etc.)
+sort_inline_tables = true
+sort_inline_arrays = true
+spaces_before_inline_comment = 2
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true
+
+[tool.poetry.group.dev.dependencies]

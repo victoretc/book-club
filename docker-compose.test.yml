@@ -1,0 +1,11 @@
+# CI backend tests: expose Postgres to the workflow runner on localhost.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+
+services:
+  backend:
+    ports:
+      - "8000:8000"
+
+  postgres:
+    ports:
+      - "5432:5432"

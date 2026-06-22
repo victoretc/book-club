@@ -1,0 +1,7 @@
+venv/
+.venv/
+static/
+.circleci/
+db.sqlite
+.env
+__pycache__/

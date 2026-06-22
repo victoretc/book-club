@@ -1,0 +1,152 @@
+[
+  {
+    "model": "clubs.club",
+    "pk": 1,
+    "fields": {
+      "book_title": "To Kill a Mockingbird",
+      "book_authors": "Harper Lee",
+      "publication_year": 1960,
+      "description": "A classic novel about racial injustice and moral growth in the American South.",
+      "telegram_chat_link": "https://t.me/mockingbird_club",
+      "owner": 1,
+      "members": [1, 2],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 2,
+    "fields": {
+      "book_title": "1984",
+      "book_authors": "George Orwell",
+      "publication_year": 1949,
+      "description": "Dystopian novel about totalitarianism and surveillance.",
+      "telegram_chat_link": "https://t.me/orwell_club",
+      "owner": 2,
+      "members": [2, 3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 3,
+    "fields": {
+      "book_title": "Pride and Prejudice",
+      "book_authors": "Jane Austen",
+      "publication_year": 1813,
+      "description": "Romantic novel about the Bennett family and their relationships.",
+      "telegram_chat_link": "https://t.me/austen_club",
+      "owner": 3,
+      "members": [1, 3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 4,
+    "fields": {
+      "book_title": "The Great Gatsby",
+      "book_authors": "F. Scott Fitzgerald",
+      "publication_year": 1925,
+      "description": "Novel about the American Dream during the Roaring Twenties.",
+      "telegram_chat_link": "https://t.me/gatsby_club",
+      "owner": 1,
+      "members": [1, 2, 3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 5,
+    "fields": {
+      "book_title": "Moby-Dick",
+      "book_authors": "Herman Melville",
+      "publication_year": 1851,
+      "description": "Epic tale of Captain Ahab's obsessive quest for the white whale.",
+      "telegram_chat_link": "https://t.me/mobydick_club",
+      "owner": 2,
+      "members": [2],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 6,
+    "fields": {
+      "book_title": "War and Peace",
+      "book_authors": "Leo Tolstoy",
+      "publication_year": 1869,
+      "description": "Historical novel about French invasion of Russia.",
+      "telegram_chat_link": "https://t.me/tolstoy_club",
+      "owner": 3,
+      "members": [3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 7,
+    "fields": {
+      "book_title": "The Hobbit",
+      "book_authors": "J.R.R. Tolkien",
+      "publication_year": 1937,
+      "description": "Fantasy novel about Bilbo Baggins' adventure.",
+      "telegram_chat_link": "https://t.me/hobbit_club",
+      "owner": 1,
+      "members": [1, 3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 8,
+    "fields": {
+      "book_title": "Crime and Punishment",
+      "book_authors": "Fyodor Dostoevsky",
+      "publication_year": 1866,
+      "description": "Psychological novel about morality and redemption.",
+      "telegram_chat_link": "https://t.me/dostoevsky_club",
+      "owner": 2,
+      "members": [2],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 9,
+    "fields": {
+      "book_title": "The Catcher in the Rye",
+      "book_authors": "J.D. Salinger",
+      "publication_year": 1951,
+      "description": "Novel about teenage alienation and angst.",
+      "telegram_chat_link": "https://t.me/salinger_club",
+      "owner": 3,
+      "members": [3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 10,
+    "fields": {
+      "book_title": "Brave New World",
+      "book_authors": "Aldous Huxley",
+      "publication_year": 1932,
+      "description": "Dystopian novel about technological society.",
+      "telegram_chat_link": "https://t.me/huxley_club",
+      "owner": 1,
+      "members": [1, 2, 3],
+      "created": "2023-01-01T12:00:00Z",
+      "modified": "2023-01-01T12:00:00Z"
+    }
+  }
+]

@@ -1,0 +1,80 @@
+#
+# Python version has to be set in the build command
+#
+ARG PYTHON_VERSION=python-version-not-set
+
+#
+# Compile custom uwsgi, cuz debian's one is weird
+#
+FROM python:${PYTHON_VERSION}-slim-bookworm AS uwsgi-compile
+ENV _UWSGI_VERSION=2.0.29
+RUN apt-get update && apt-get --no-install-recommends install -y build-essential wget && rm -rf /var/lib/apt/lists/*
+RUN wget -O uwsgi-${_UWSGI_VERSION}.tar.gz https://github.com/unbit/uwsgi/archive/${_UWSGI_VERSION}.tar.gz \
+  && tar zxvf uwsgi-*.tar.gz \
+  && UWSGI_BIN_NAME=/uwsgi make -C uwsgi-${_UWSGI_VERSION} \
+  && rm -Rf uwsgi-*
+
+#
+# Build virtual environment with dependencies
+# https://github.com/astral-sh/uv-docker-example/blob/main/multistage.Dockerfile
+#
+FROM python:${PYTHON_VERSION}-slim-bookworm AS deps-compile
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=0
+
+WORKDIR /code
+
+COPY pyproject.toml uv.lock /code/
+RUN --mount=type=cache,target=/root/.cache/uv \
+  uv sync --frozen --no-dev
+
+#
+# Base image with django dependencies
+# It is important to use the image that matches the deps-compile image
+#
+FROM python:${PYTHON_VERSION}-slim-bookworm AS base
+LABEL maintainer="johnmakarovqa@gmail.com"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV STATIC_ROOT=/code/static
+# Define user ids to ensure consistent permissions, e.g., for mounted volumes
+ENV UID=999 GID=999
+
+RUN apt-get update \
+  && apt-get --no-install-recommends install -y gettext locales-all tzdata git wait-for-it wget \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system --gid=${GID} "web" \
+  && useradd --system --uid=${UID} --gid=${GID} --create-home --home-dir "/code" "web"
+
+COPY --from=uwsgi-compile /uwsgi /usr/local/bin/
+COPY --from=deps-compile --chown=web:web /code/.venv /code/.venv
+COPY --chown=web:web src /code/src
+ENV PATH="/code/.venv/bin:$PATH"
+
+WORKDIR /code/src
+
+USER web
+RUN python manage.py compilemessages
+RUN python manage.py collectstatic --noinput
+
+# Also to mark that when CMD is used in shell form, it is a conscious decision
+SHELL ["/bin/bash", "-c"]
+
+
+FROM base AS web
+HEALTHCHECK --interval=15s --timeout=15s --start-period=15s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:8000/api/v1/healthchecks/
+
+CMD python manage.py migrate \
+  && uwsgi \
+    --master \
+    --http=:8000 \
+    --venv=/code/.venv/ \
+    --wsgi=app.wsgi \
+    --workers=2 \
+    --threads=2 \
+    --harakiri=25 \
+    --max-requests=1000 \
+    --log-x-forwarded-for
