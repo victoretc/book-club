@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { createPinia, setActivePinia } from 'pinia'
 import { provide } from 'vue'
-import { routerKey, routeLocationKey } from 'vue-router'
+import { createMemoryHistory, createRouter, routerKey, routeLocationKey } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import ClubFilters from './ClubFilters.vue'
 
 const meta = {
@@ -16,8 +17,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const mockRouter = { push: () => {} }
-const mockRoute = { path: '/', query: {}, params: {}, hash: '', fullPath: '/', matched: [] }
+const mockRouter = createRouter({
+  history: createMemoryHistory(),
+  routes: [],
+})
+const mockRoute = { path: '/', query: {}, params: {}, hash: '', fullPath: '/', matched: [], name: undefined, redirectedFrom: undefined, meta: {} } as RouteLocationNormalizedLoaded
 
 export const Default: Story = {
   decorators: [
