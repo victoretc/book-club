@@ -73,8 +73,8 @@ CMD python manage.py migrate \
     --http=:8000 \
     --venv=/code/.venv/ \
     --wsgi=app.wsgi \
-    --workers=2 \
-    --threads=2 \
+    --workers=4 \
+    --threads=4 \
     --harakiri=25 \
     --max-requests=1000 \
     --log-x-forwarded-for
