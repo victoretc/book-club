@@ -79,7 +79,7 @@ class VerifyCodeView(GenericAPIView):
         instance.is_used = True
         instance.save(update_fields=["is_used"])
 
-        user, created = User.objects.get_or_create(
+        user, _created = User.objects.get_or_create(
             email=email,
             defaults={
                 "username": email,

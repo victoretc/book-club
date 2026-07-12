@@ -62,8 +62,6 @@ const memberInitials = (club: Club) => {
   <div class="clubs-page">
     <ClubFilters />
 
-    <div v-if="clubsStore.error" class="error">{{ clubsStore.error }}</div>
-
     <Transition name="fade-slide" mode="out-in">
       <div v-if="clubsStore.isLoading" key="loading" class="clubs-list clubs-loading">
         <div v-for="n in 3" :key="n" class="skeleton-card">
@@ -293,13 +291,6 @@ const memberInitials = (club: Club) => {
   align-items: center;
   justify-content: center;
   color: var(--color-text-secondary);
-}
-
-.error {
-  color: var(--color-error);
-  font-weight: 500;
-  padding: 32px;
-  text-align: center;
 }
 
 .no-results {

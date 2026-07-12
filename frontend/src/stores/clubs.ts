@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
-import type { Club, ClubsListParams, PatchedClub } from '@/api/data-contracts'
+import { showToast } from '@/stores/toast'
+import type { Club, ClubsListParams } from '@/api/data-contracts'
 
 interface ClubsState {
   clubs: Club[]
   isLoading: boolean
-  error: string | null
   activeFilter: 'member' | 'owner' | 'all' | null
   activeSearch: string | null
   pagination: {
@@ -22,7 +22,6 @@ export const useClubsStore = defineStore('clubs', {
   state: (): ClubsState => ({
     clubs: [],
     isLoading: false,
-    error: null,
     activeFilter: null,
     activeSearch: null,
     pagination: {
@@ -37,7 +36,6 @@ export const useClubsStore = defineStore('clubs', {
   actions: {
     async _fetchClubsWithParams(params: ClubsListParams, errorMessage: string) {
       this.isLoading = true
-      this.error = null
       try {
         const response = await api.api.clubsList(params)
         this.clubs = response.data.results
@@ -49,7 +47,7 @@ export const useClubsStore = defineStore('clubs', {
           pageSize: params.page_size ?? 10,
         }
       } catch (error) {
-        this.error = errorMessage
+        showToast(errorMessage)
         console.error('Error fetching clubs:', error)
       } finally {
         this.isLoading = false
@@ -148,12 +146,10 @@ export const useClubsStore = defineStore('clubs', {
 
     async createClub(data: Partial<Club>) {
       this.isLoading = true
-      this.error = null
       try {
         const response = await api.api.clubsCreate(data as Club)
         return response.data
       } catch (error) {
-        this.error = 'Ошибка при создании клуба'
         console.error('Error creating club:', error)
         throw error
       } finally {
@@ -163,12 +159,10 @@ export const useClubsStore = defineStore('clubs', {
 
     async updateClub(clubId: number, data: Partial<Club>) {
       this.isLoading = true
-      this.error = null
       try {
         const response = await api.api.clubsUpdate(clubId, data as Club)
         return response.data
       } catch (error) {
-        this.error = 'Ошибка при обновлении клуба'
         console.error('Error updating club:', error)
         throw error
       } finally {
@@ -178,12 +172,10 @@ export const useClubsStore = defineStore('clubs', {
 
     async fetchClub(clubId: number) {
       this.isLoading = true
-      this.error = null
       try {
         const response = await api.api.clubsRetrieve(clubId)
         return response.data
       } catch (error) {
-        this.error = 'Не удалось загрузить информацию о клубе'
         console.error('Error fetching club:', error)
         throw error
       } finally {
