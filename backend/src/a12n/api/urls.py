@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.urls import path
 from rest_framework_simplejwt import views as jwt
 
 from a12n.api import views
-from a12n.api.code_views import RequestCodeView, VerifyCodeView
+from a12n.api.code_views import RequestCodeView, RetrieveCodeView, VerifyCodeView
 
 
 app_name = "a12n"
@@ -14,3 +15,8 @@ urlpatterns = [
     path("code/", RequestCodeView.as_view(), name="auth_request_code"),
     path("code/verify/", VerifyCodeView.as_view(), name="auth_verify_code"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("code/retrieve/", RetrieveCodeView.as_view(), name="auth_retrieve_code"),
+    ]

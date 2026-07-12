@@ -32,3 +32,16 @@ class VerifyCodeSerializer(serializers.Serializer):
 
         data["instance"] = instance
         return data
+
+
+class RetrieveCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField(help_text="Email адрес, на который был отправлен код")
+
+    def validate_email(self, value):
+        if not EmailVerificationCode.objects.filter(email=value, is_used=False).exists():
+            raise serializers.ValidationError("Нет активных кодов для этого email")
+        return value
+
+
+class RetrieveCodeResponseSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=4, help_text="4-значный код подтверждения")

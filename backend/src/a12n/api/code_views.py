@@ -1,13 +1,19 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from a12n.api.code_serializers import RequestCodeSerializer, VerifyCodeSerializer
+from a12n.api.code_serializers import (
+    RequestCodeSerializer,
+    RetrieveCodeResponseSerializer,
+    RetrieveCodeSerializer,
+    VerifyCodeSerializer,
+)
 from a12n.api.throttling import AuthAnonRateThrottle
 from a12n.models import EmailVerificationCode
 from users.models import User
@@ -73,3 +79,28 @@ class VerifyCodeView(GenericAPIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class RetrieveCodeView(GenericAPIView):
+    """Тестовый эндпоинт: возвращает последний неиспользованный код для email."""
+
+    serializer_class = RetrieveCodeSerializer
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    @extend_schema(
+        summary="Получить код подтверждения (тест)",
+        description="Возвращает последний неиспользованный код для указанного email. Только для DEBUG.",
+        request=RetrieveCodeSerializer,
+        responses={200: RetrieveCodeResponseSerializer},
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+        code_instance = EmailVerificationCode.objects.filter(
+            email=email, is_used=False
+        ).latest("created_at")
+
+        return Response({"code": code_instance.code}, status=status.HTTP_200_OK)

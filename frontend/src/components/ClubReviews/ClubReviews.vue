@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, nextTick } from 'vue'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
+import { showToast } from '@/stores/toast'
 import type { BookReview, Member } from '@/api/data-contracts'
 import { getStars, formatDate } from '@/utils/format'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
@@ -19,9 +20,10 @@ const formState = ref<'idle' | 'creating' | 'editing'>('idle')
 const editingReviewId = ref<number | null>(null)
 const isLoading = ref(false)
 const error = ref('')
-const success = ref('')
 
 const formRef = ref<HTMLElement | null>(null)
+
+
 
 const reviewForm = ref({
   review: '',
@@ -57,7 +59,6 @@ const startCreate = () => {
   editingReviewId.value = null
   reviewForm.value = { review: '', assessment: 5, readPages: 0 }
   error.value = ''
-  success.value = ''
   nextTick(() => {
     formRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   })
@@ -72,7 +73,6 @@ const startEdit = (review: BookReview) => {
     readPages: review.readPages ?? 0,
   }
   error.value = ''
-  success.value = ''
   nextTick(() => {
     formRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   })
@@ -82,7 +82,6 @@ const cancelForm = () => {
   formState.value = 'idle'
   editingReviewId.value = null
   error.value = ''
-  success.value = ''
 }
 
 const createReview = async () => {
@@ -98,7 +97,6 @@ const createReview = async () => {
 
   isLoading.value = true
   error.value = ''
-  success.value = ''
 
   try {
     const newReview = await reviewsStore.createReview(props.clubId, {
@@ -108,7 +106,7 @@ const createReview = async () => {
     })
 
     userReview.value = newReview
-    success.value = 'Отзыв успешно создан'
+    showToast('Отзыв успешно создан', 'success')
     formState.value = 'idle'
   } catch {
     error.value = 'Ошибка при создании отзыва'
@@ -127,7 +125,6 @@ const updateReview = async () => {
 
   isLoading.value = true
   error.value = ''
-  success.value = ''
 
   try {
     const updatedReview = await reviewsStore.updateReview(editingReviewId.value, {
@@ -140,7 +137,7 @@ const updateReview = async () => {
       userReview.value = updatedReview
     }
 
-    success.value = 'Отзыв успешно обновлен'
+    showToast('Отзыв успешно обновлен', 'success')
     formState.value = 'idle'
     editingReviewId.value = null
   } catch {
@@ -160,7 +157,7 @@ const deleteReview = async (reviewId: number) => {
       userReview.value = null
     }
 
-    success.value = 'Отзыв успешно удален'
+    showToast('Отзыв успешно удален', 'success')
   } catch {
     error.value = 'Ошибка при удалении отзыва'
   }
@@ -182,7 +179,6 @@ onMounted(loadReviews)
       </BaseButton>
     </div>
 
-    <div v-if="success" class="msg msg--success">{{ success }}</div>
     <div v-if="error" class="msg msg--error">{{ error }}</div>
 
     <div v-if="formState !== 'idle'" ref="formRef" class="review-form">
@@ -377,10 +373,6 @@ onMounted(loadReviews)
 
 .msg--error {
   color: var(--color-error);
-}
-
-.msg--success {
-  color: var(--color-success);
 }
 
 .reviews-list {
