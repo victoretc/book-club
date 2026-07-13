@@ -70,8 +70,8 @@ onMounted(fetchClub)
 </script>
 
 <template>
-  <div class="detail-page">
-    <div v-if="isLoading" class="skeleton">
+  <div class="detail-page" data-testid="club-details-page">
+    <div v-if="isLoading" class="skeleton" data-testid="club-details-skeleton">
       <div class="skeleton-card">
         <div class="skeleton-line skeleton-line--title" />
         <div class="skeleton-line skeleton-line--short" />
@@ -81,41 +81,42 @@ onMounted(fetchClub)
       </div>
     </div>
 
-    <div v-else-if="error" class="error-state">
-      <p class="error-text">{{ error }}</p>
-      <BaseButton variant="outline" @click="fetchClub">Попробовать снова</BaseButton>
+    <div v-else-if="error" class="error-state" data-testid="club-details-error">
+      <p class="error-text" data-testid="club-details-error-text">{{ error }}</p>
+      <BaseButton variant="outline" testId="club-details-retry-button" @click="fetchClub">Попробовать снова</BaseButton>
     </div>
 
-    <div v-else-if="club" class="detail-card">
+    <div v-else-if="club" class="detail-card" data-testid="club-details-card">
       <div class="card-head">
-        <h1 class="card-title">{{ club.bookTitle }}</h1>
-        <span class="year-badge">{{ club.publicationYear }}</span>
+        <h1 class="card-title" data-testid="club-details-book-title">{{ club.bookTitle }}</h1>
+        <span class="year-badge" data-testid="club-details-publication-year">{{ club.publicationYear }}</span>
       </div>
 
-      <p class="card-author">{{ club.bookAuthors }}</p>
+      <p class="card-author" data-testid="club-details-book-author">{{ club.bookAuthors }}</p>
 
       <div class="card-divider" />
 
-      <p class="card-desc">{{ club.description }}</p>
+      <p class="card-desc" data-testid="club-details-description">{{ club.description }}</p>
 
-      <div class="card-stats">
+      <div class="card-stats" data-testid="club-details-stats">
         <span class="stat">
-          <span class="stat-num">{{ club.members.length }}</span>
+          <span class="stat-num" data-testid="club-details-members-count">{{ club.members.length }}</span>
           {{ pluralize(club.members.length, ['участник', 'участника', 'участников']) }}
         </span>
         <span class="stat-sep">•</span>
         <span class="stat">
-          <span class="stat-num">{{ club.reviews?.length || 0 }}</span>
+          <span class="stat-num" data-testid="club-details-reviews-count">{{ club.reviews?.length || 0 }}</span>
           {{ reviewLabel(club.reviews?.length || 0) }}
         </span>
       </div>
 
       <div class="card-divider" />
 
-      <div class="card-actions">
+      <div class="card-actions" data-testid="club-details-actions">
         <BaseButton
           v-if="club.telegramChatLink"
           variant="brand-outline"
+          testId="club-details-telegram-button"
           @click="openTelegram"
         >
           Telegram чат
@@ -125,6 +126,7 @@ onMounted(fetchClub)
           <BaseButton
             v-if="!isMember && !isOwner"
             variant="primary"
+            testId="club-details-join-button"
             @click="handleJoin"
           >
             Присоединиться
@@ -135,6 +137,7 @@ onMounted(fetchClub)
             variant="danger"
             :loading="isLeaving"
             :disabled="isLeaving"
+            testId="club-details-leave-button"
             @click="handleLeave"
           >
             Покинуть клуб
@@ -143,6 +146,7 @@ onMounted(fetchClub)
           <BaseButton
             v-if="isOwner"
             variant="outline"
+            testId="club-details-edit-button"
             @click="router.push(`/clubs/${club.id}/edit`)"
           >
             Редактировать
@@ -152,7 +156,7 @@ onMounted(fetchClub)
 
       <div class="card-divider" />
 
-      <ClubReviews :club-id="club.id" :club-members="club.members" :club-owner="club.owner" />
+      <ClubReviews data-testid="club-details-reviews" :club-id="club.id" :club-members="club.members" :club-owner="club.owner" />
     </div>
   </div>
 </template>

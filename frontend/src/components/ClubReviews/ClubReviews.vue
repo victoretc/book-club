@@ -167,21 +167,22 @@ onMounted(loadReviews)
 </script>
 
 <template>
-  <div class="reviews">
+  <div class="reviews" data-testid="club-reviews">
     <div class="reviews-head">
-      <h2 class="reviews-title">Отзывы участников</h2>
+      <h2 class="reviews-title" data-testid="club-reviews-title">Отзывы участников</h2>
       <BaseButton
         v-if="canReview && formState === 'idle' && !userReview"
         variant="primary"
+        testId="club-reviews-create-button"
         @click="startCreate"
       >
         Написать отзыв
       </BaseButton>
     </div>
 
-    <div v-if="error" class="msg msg--error">{{ error }}</div>
+    <div v-if="error" class="msg msg--error" data-testid="club-reviews-error">{{ error }}</div>
 
-    <div v-if="formState !== 'idle'" ref="formRef" class="review-form">
+    <div v-if="formState !== 'idle'" ref="formRef" class="review-form" data-testid="club-reviews-form">
       <h3 class="form-title">{{ formState === 'creating' ? 'Новый отзыв' : 'Редактирование отзыва' }}</h3>
       <form @submit.prevent="formState === 'creating' ? createReview() : updateReview()">
         <div class="form-group">
@@ -194,6 +195,7 @@ onMounted(loadReviews)
             max="5"
             placeholder="Оценка от 1 до 5"
             class="form-input form-input--sm"
+            data-testid="club-reviews-assessment-input"
           />
         </div>
 
@@ -206,6 +208,7 @@ onMounted(loadReviews)
             min="0"
             placeholder="Сколько страниц прочитали"
             class="form-input form-input--sm"
+            data-testid="club-reviews-pages-input"
           />
         </div>
 
@@ -218,26 +221,28 @@ onMounted(loadReviews)
             placeholder="Поделитесь своими впечатлениями о книге..."
             class="form-textarea"
             required
+            data-testid="club-reviews-text-input"
           />
         </div>
 
         <div class="form-actions">
-          <BaseButton type="submit" variant="primary" :loading="isLoading" :disabled="isLoading">
+          <BaseButton type="submit" variant="primary" :loading="isLoading" :disabled="isLoading" testId="club-reviews-submit-button">
             {{ formState === 'creating' ? 'Опубликовать' : 'Сохранить' }}
           </BaseButton>
-          <BaseButton variant="outline" @click="cancelForm" :disabled="isLoading">
+          <BaseButton variant="outline" @click="cancelForm" :disabled="isLoading" testId="club-reviews-cancel-button">
             Отмена
           </BaseButton>
         </div>
       </form>
     </div>
 
-    <div v-if="clubReviews.length > 0" class="reviews-list">
+    <div v-if="clubReviews.length > 0" class="reviews-list" data-testid="club-reviews-list">
       <div
-        v-for="review in clubReviews"
+        v-for="(review, index) in clubReviews"
         :key="review.id"
         class="review-card"
         :class="{ 'review-card--mine': review.user.id === authStore.user?.id }"
+        :data-testid="`club-review-on-row-${index}-card`"
       >
         <div class="review-head">
           <div class="reviewer">
@@ -255,18 +260,18 @@ onMounted(loadReviews)
         <div class="review-foot">
           <span class="review-date">{{ formatDate(review.created) }}</span>
           <div v-if="canEditReview(review) && formState === 'idle'" class="review-actions">
-            <BaseButton variant="ghost" @click="startEdit(review)">Редактировать</BaseButton>
-            <BaseButton variant="danger" @click="deleteReview(review.id)">Удалить</BaseButton>
+            <BaseButton variant="ghost" :testId="`club-review-on-row-${index}-edit-button`" @click="startEdit(review)">Редактировать</BaseButton>
+            <BaseButton variant="danger" :testId="`club-review-on-row-${index}-delete-button`" @click="deleteReview(review.id)">Удалить</BaseButton>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-else-if="formState === 'idle' && !isLoading" class="empty">
+    <div v-else-if="formState === 'idle' && !isLoading" class="empty" data-testid="club-reviews-empty">
       Пока нет отзывов. Будьте первым!
     </div>
 
-    <div v-if="reviewsStore.isLoading && !isLoading" class="loading">Загрузка отзывов...</div>
+    <div v-if="reviewsStore.isLoading && !isLoading" class="loading" data-testid="club-reviews-loading">Загрузка отзывов...</div>
   </div>
 </template>
 

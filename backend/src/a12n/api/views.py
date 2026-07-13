@@ -99,15 +99,12 @@ class VerifyCodeView(GenericAPIView):
 
 
 class RetrieveCodeView(GenericAPIView):
-    """Тестовый эндпоинт: возвращает последний неиспользованный код для email."""
-
     serializer_class = RetrieveCodeSerializer
     permission_classes = [AllowAny]
     throttle_classes = [AuthAnonRateThrottle]
 
     @extend_schema(
-        summary="Получить код подтверждения (тест)",
-        description="Возвращает последний неиспользованный код для указанного email. Только для DEBUG.",
+        description="Возвращает последний неиспользованный код для указанного email. Работает только в DEBUG.",
         request=RetrieveCodeSerializer,
         responses={200: RetrieveCodeResponseSerializer},
     )

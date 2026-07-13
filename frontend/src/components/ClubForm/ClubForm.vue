@@ -78,8 +78,8 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <form @submit="onSubmit" class="form-card">
-    <h1 class="form-title">{{ clubId ? 'Редактирование клуба' : 'Создать клуб' }}</h1>
+  <form @submit="onSubmit" class="form-card" data-testid="club-form">
+    <h1 class="form-title" data-testid="club-form-title">{{ clubId ? 'Редактирование клуба' : 'Создать клуб' }}</h1>
 
     <div class="field">
       <label for="bookTitle">Название книги *</label>
@@ -90,6 +90,7 @@ const onSubmit = handleSubmit(async (values) => {
         placeholder="Компьютерные сети"
         :disabled="isLoading"
         class="input"
+        data-testid="club-form-book-title-input"
       />
       <ErrorMessage name="bookTitle" class="field-error" />
     </div>
@@ -103,6 +104,7 @@ const onSubmit = handleSubmit(async (values) => {
         placeholder="Дэвид Уэзеролл и Эндрю Таненбаум"
         :disabled="isLoading"
         class="input"
+        data-testid="club-form-book-authors-input"
       />
       <ErrorMessage name="bookAuthors" class="field-error" />
     </div>
@@ -116,6 +118,7 @@ const onSubmit = handleSubmit(async (values) => {
         placeholder="2012"
         :disabled="isLoading"
         class="input"
+        data-testid="club-form-publication-year-input"
       />
       <ErrorMessage name="publicationYear" class="field-error" />
     </div>
@@ -130,6 +133,7 @@ const onSubmit = handleSubmit(async (values) => {
         placeholder="Описание книги"
         :disabled="isLoading"
         class="textarea"
+        data-testid="club-form-description-input"
       />
       <ErrorMessage name="description" class="field-error" />
     </div>
@@ -142,17 +146,18 @@ const onSubmit = handleSubmit(async (values) => {
         placeholder="https://t.me/..."
         :disabled="isLoading"
         class="input"
+        data-testid="club-form-telegram-input"
       />
       <ErrorMessage name="telegramChatLink" class="field-error" />
     </div>
 
-    <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+    <div v-if="errorMsg" class="error-msg" data-testid="club-form-error">{{ errorMsg }}</div>
 
     <div class="form-actions">
-      <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading">
+      <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading" testId="club-form-submit-button">
         {{ clubId ? 'Сохранить изменения' : 'Создать клуб' }}
       </BaseButton>
-      <BaseButton variant="outline" full-width @click="router.push('/')" :disabled="isLoading">
+      <BaseButton variant="outline" full-width @click="router.push('/')" :disabled="isLoading" testId="club-form-cancel-button">
         Отмена
       </BaseButton>
     </div>

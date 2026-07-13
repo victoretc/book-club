@@ -7,6 +7,7 @@ interface Props {
   disabled?: boolean
   fullWidth?: boolean
   type?: 'button' | 'submit' | 'reset'
+  testId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,6 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   fullWidth: false,
   type: 'button',
+  testId: undefined,
 })
 
 const emit = defineEmits<{
@@ -34,6 +36,7 @@ const classes = computed(() => [
     :class="classes"
     :disabled="disabled || loading"
     :type="type"
+    :data-testid="testId"
     @click="(e: MouseEvent) => emit('click', e)"
   >
     <span v-if="!loading" class="base-btn__text">
