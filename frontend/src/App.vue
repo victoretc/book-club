@@ -37,4 +37,10 @@ main {
     padding: 24px 16px 40px;
   }
 }
+
+@media (max-width: 480px) {
+  main {
+    padding: 16px 12px 32px;
+  }
+}
 </style>

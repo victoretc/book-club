@@ -127,18 +127,33 @@ const { isAuthenticated } = storeToRefs(authStore)
   color: var(--color-brand);
 }
 
+@media (hover: none) {
+  .nav-btn:hover {
+    color: inherit;
+    background: transparent;
+  }
+}
+
 @media (max-width: 768px) {
+  .header {
+    padding: 12px 0;
+  }
+
   .header-inner {
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .brand {
+    font-size: 22px;
   }
 
   .nav {
     width: 100%;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 2px;
   }
 
   .nav-btn {
@@ -149,6 +164,32 @@ const { isAuthenticated } = storeToRefs(authStore)
   .nav-btn svg {
     width: 20px;
     height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 10px 0;
+  }
+
+  .header-inner {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .brand {
+    font-size: 20px;
+  }
+
+  .nav-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .nav-btn svg {
+    width: 18px;
+    height: 18px;
   }
 }
 </style>

@@ -115,7 +115,6 @@ function backToEmail() {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  padding-top: 40px;
 }
 
 .auth-card {
@@ -199,10 +198,50 @@ function backToEmail() {
   box-shadow: 0 0 0 3px var(--color-brand-ring);
 }
 
+@media (max-width: 768px) {
+  .auth-card {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-card {
-    padding: 24px;
-    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .auth-title {
+    font-size: 26px;
+    margin-bottom: 24px;
+  }
+
+  .auth-hint {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  .field label {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .input {
+    height: 46px;
+    padding: 0 14px;
+    font-size: 16px;
+  }
+
+  .error-msg {
+    margin-top: 16px;
+    font-size: 14px;
+  }
+
+  .auth-recovery {
+    font-size: 13px;
+    margin-top: 18px;
   }
 }
 </style>

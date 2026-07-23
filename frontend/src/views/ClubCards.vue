@@ -181,6 +181,7 @@ const memberInitials = (club: Club) => {
   font-weight: 500;
   line-height: 1.1;
   color: var(--color-text);
+  word-break: break-word;
 }
 
 .year-badge {
@@ -386,7 +387,9 @@ const memberInitials = (club: Club) => {
 }
 
 .not-found-img {
+  max-width: 100%;
   height: auto;
+  width: 360px;
 }
 
 .fade-slide-enter-active,
@@ -412,13 +415,12 @@ const memberInitials = (club: Club) => {
   }
 
   .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    gap: 10px;
   }
 
   .card-title {
     font-size: 24px;
+    flex: 1;
   }
 
   .card-author {
@@ -431,6 +433,7 @@ const memberInitials = (club: Club) => {
 
   .card-footer {
     gap: 12px;
+    padding-top: 12px;
   }
 
   .member-count {
@@ -447,15 +450,111 @@ const memberInitials = (club: Club) => {
   }
 }
 
+@media (hover: none) {
+  .club-card:hover {
+    box-shadow: none;
+    transform: none;
+  }
+}
+
 @media (max-width: 480px) {
+  .clubs-page {
+    gap: 12px;
+  }
+
+  .clubs-list {
+    gap: 12px;
+  }
+
+  .club-card {
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .card-header {
+    gap: 8px;
+  }
+
+  .card-title {
+    font-size: 20px;
+    flex: 1;
+  }
+
+  .year-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .card-author {
+    font-size: 13px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-line-clamp: 2;
+  }
+
   .card-footer {
-    flex-direction: column;
-    align-items: stretch;
+    gap: 8px;
+    padding-top: 10px;
   }
 
   .card-members {
-    justify-content: center;
+    gap: 8px;
   }
 
+  .member-avatar,
+  .you-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+    border-width: 1.5px;
+    margin-left: -6px;
+  }
+
+  .member-count {
+    font-size: 12px;
+  }
+
+  .card-arrow svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .skeleton-card {
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .skeleton-heading {
+    gap: 8px;
+  }
+
+  .skeleton-title {
+    height: 24px;
+  }
+
+  .skeleton-badge {
+    width: 48px;
+    height: 22px;
+  }
+
+  .skeleton-author {
+    height: 15px;
+  }
+
+  .skeleton-desc {
+    height: 14px;
+  }
+
+  .skeleton-footer {
+    padding-top: 10px;
+  }
+
+  .skeleton-members {
+    width: 100px;
+    height: 28px;
+  }
 }
 </style>
