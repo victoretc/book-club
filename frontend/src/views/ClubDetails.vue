@@ -120,7 +120,7 @@ onMounted(fetchClub)
 
       <div class="card-actions" data-testid="club-details-actions">
         <BaseButton
-          v-if="club.telegramChatLink"
+          v-if="club.telegramChatLink && (isMember || isOwner)"
           variant="brand-outline"
           testId="club-details-telegram-button"
           @click="openTelegram"
@@ -129,7 +129,7 @@ onMounted(fetchClub)
         </BaseButton>
 
         <BaseButton
-          v-if="club.maxChatLink"
+          v-if="club.maxChatLink && (isMember || isOwner)"
           variant="outline"
           testId="club-details-max-chat-button"
           @click="openMaxChat"
