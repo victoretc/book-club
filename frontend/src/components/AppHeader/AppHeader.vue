@@ -1,9 +1,50 @@
 <script setup lang="ts">
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)
+
+const route = useRoute()
+const menuOpen = ref(false)
+
+const toggleMenu = () => {
+  menuOpen.value = !menuOpen.value
+}
+
+const closeMenu = () => {
+  menuOpen.value = false
+}
+
+watch(
+  () => route.fullPath,
+  () => closeMenu(),
+)
+
+function onDocumentClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof Element) || !target.closest('.header')) {
+    closeMenu()
+  }
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    closeMenu()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+  document.addEventListener('keydown', onKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <template>
@@ -13,7 +54,21 @@ const { isAuthenticated } = storeToRefs(authStore)
         Читальная
       </router-link>
 
-      <nav class="nav" data-testid="main-nav">
+      <button
+        class="burger"
+        type="button"
+        data-testid="burger-button"
+        :aria-label="menuOpen ? 'Закрыть меню' : 'Открыть меню'"
+        aria-controls="mobile-nav"
+        :aria-expanded="menuOpen"
+        @click="toggleMenu"
+      >
+        <span class="burger-bar" />
+        <span class="burger-bar" />
+        <span class="burger-bar" />
+      </button>
+
+      <nav id="mobile-nav" class="nav" data-testid="main-nav" :class="{ 'nav--open': menuOpen }">
         <template v-if="isAuthenticated">
           <router-link to="/clubs/create" class="nav-btn" data-testid="create-club-link">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -88,6 +143,49 @@ const { isAuthenticated } = storeToRefs(authStore)
   gap: 8px;
 }
 
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.burger:hover {
+  background: var(--color-brand-soft);
+}
+
+.burger-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-text);
+  transition:
+    transform 0.25s var(--ease-out),
+    opacity 0.25s var(--ease-out);
+}
+
+.burger[aria-expanded='true'] .burger-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burger[aria-expanded='true'] .burger-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.burger[aria-expanded='true'] .burger-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .nav-btn {
   display: inline-flex;
   align-items: center;
@@ -140,8 +238,6 @@ const { isAuthenticated } = storeToRefs(authStore)
   }
 
   .header-inner {
-    flex-direction: column;
-    gap: 10px;
     padding: 0 16px;
   }
 
@@ -149,16 +245,44 @@ const { isAuthenticated } = storeToRefs(authStore)
     font-size: 22px;
   }
 
+  .burger {
+    display: inline-flex;
+  }
+
   .nav {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
     gap: 2px;
+    padding: 0 16px 16px;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-stroke-subtle);
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition:
+      max-height 0.3s var(--ease-out),
+      opacity 0.25s var(--ease-out),
+      transform 0.3s var(--ease-out),
+      visibility 0.3s;
+  }
+
+  .nav--open {
+    max-height: 320px;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
 
   .nav-btn {
-    padding: 6px 10px;
-    font-size: 14px;
+    justify-content: flex-start;
+    padding: 10px 12px;
+    font-size: 16px;
   }
 
   .nav-btn svg {
@@ -173,7 +297,6 @@ const { isAuthenticated } = storeToRefs(authStore)
   }
 
   .header-inner {
-    gap: 8px;
     padding: 0 12px;
   }
 
@@ -181,15 +304,8 @@ const { isAuthenticated } = storeToRefs(authStore)
     font-size: 20px;
   }
 
-  .nav-btn {
-    padding: 6px 10px;
-    font-size: 13px;
-    gap: 4px;
-  }
-
-  .nav-btn svg {
-    width: 18px;
-    height: 18px;
+  .nav {
+    padding: 0 12px 12px;
   }
 }
 </style>
