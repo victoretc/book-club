@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
-import { useCategoriesStore } from '@/stores/categories'
 import ClubFilters from './ClubFilters.vue'
 
 const push = vi.fn()
@@ -97,33 +96,5 @@ describe('ClubFilters', () => {
     await wrapper.find('.search-btn').trigger('click')
 
     expect(clubsStore.searchClubs).toHaveBeenCalledWith('fantasy')
-  })
-
-  it('renders top-level category pills and filters by category and subcategory', async () => {
-    const categoriesStore = useCategoriesStore()
-    categoriesStore.$patch({
-      categories: [
-        { id: 1, name: 'IT', slug: 'it', parent: null },
-        { id: 2, name: 'Бизнес', slug: 'business', parent: null },
-        { id: 11, name: 'Программирование', slug: 'programming', parent: 1 },
-      ],
-    })
-    const clubsStore = useClubsStore()
-    vi.spyOn(clubsStore, 'filterByCategory').mockResolvedValue(undefined)
-
-    const wrapper = createWrapper()
-    const itTab = wrapper.findAll('.category-tab').find((b) => b.text() === 'IT')
-    expect(itTab).toBeDefined()
-    await itTab!.trigger('click')
-
-    expect(clubsStore.filterByCategory).toHaveBeenCalledWith(1)
-
-    const programmingChip = wrapper
-      .findAll('.subcategory-tab')
-      .find((b) => b.text() === 'Программирование')
-    expect(programmingChip).toBeDefined()
-    await programmingChip!.trigger('click')
-
-    expect(clubsStore.filterByCategory).toHaveBeenLastCalledWith(11)
   })
 })

@@ -68,10 +68,28 @@ const router = createRouter({
       meta: { title: 'Прочитанные книги' },
     },
     {
+      path: '/agreement',
+      name: 'agreement',
+      component: () => import('@/views/Agreement.vue'),
+      meta: { title: 'Согласие на обработку персональных данных' },
+    },
+    {
       path: '/',
       name: 'clubs',
       component: () => import('@/views/ClubCards.vue'),
       meta: { title: 'Клубы' },
+    },
+    {
+      path: '/categories/:slug',
+      name: 'category-clubs',
+      component: () => import('@/views/ClubCards.vue'),
+      meta: { title: 'Клубы' },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFound.vue'),
+      meta: { title: 'Страница не найдена' },
     },
   ],
 })

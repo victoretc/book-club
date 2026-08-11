@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppHeader from '@/components/AppHeader/AppHeader.vue'
 import ToastNotification from '@/components/ToastNotification/ToastNotification.vue'
+import CookieConsent from '@/components/CookieConsent/CookieConsent.vue'
 </script>
 
 <template>
@@ -10,6 +11,7 @@ import ToastNotification from '@/components/ToastNotification/ToastNotification.
       <router-view />
     </main>
     <ToastNotification />
+    <CookieConsent />
   </div>
 </template>
 

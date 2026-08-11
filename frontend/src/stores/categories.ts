@@ -39,6 +39,22 @@ export const useCategoriesStore = defineStore('categories', {
       if (id == null) return null
       return state.categories.find(c => c.id === id) ?? null
     },
+    categoryBySlug: (state) => (slug: string | undefined): Category | null => {
+      if (!slug) return null
+      return state.categories.find(c => c.slug === slug) ?? null
+    },
+    pathById: (state) => (id: number): Category[] => {
+      const path: Category[] = []
+      let current: Category | null = state.categories.find(c => c.id === id) ?? null
+      while (current) {
+        path.unshift(current)
+        const parentId = current.parent
+        current = parentId != null
+          ? state.categories.find(c => c.id === parentId) ?? null
+          : null
+      }
+      return path
+    },
     nameById: (state) => (id: number | null | undefined): string => {
       const category = state.categories.find(c => c.id === id)
       return category ? category.name : ''

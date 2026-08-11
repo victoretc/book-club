@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, computed, ref, watch, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useClubsStore } from '@/stores/clubs'
 import { useAuthStore } from '@/stores/auth'
+import { useCategoriesStore } from '@/stores/categories'
 import type { Club, Member } from '@/api/Api'
 import ClubFilters from '@/components/ClubFilters/ClubFilters.vue'
+import CategorySidebar from '@/components/CategorySidebar/CategorySidebar.vue'
 import PaginationControls from '@/components/PaginationControls/PaginationControls.vue'
+import BreadcrumbsNav from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
+import type { Crumb } from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import { memberReadingText } from '@/utils/plural'
 
 const clubsStore = useClubsStore()
@@ -13,11 +17,78 @@ if (clubsStore.clubs.length === 0) {
   clubsStore.isLoading = true
 }
 const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
 const router = useRouter()
+const route = useRoute()
+
+const currentSlug = computed(() => String(route.params.slug ?? ''))
+const currentCategory = computed(() => categoriesStore.categoryBySlug(currentSlug.value))
+const sidebarCategories = computed(() => {
+  if (currentCategory.value) {
+    return categoriesStore.childrenOf(currentCategory.value.id)
+  }
+  return categoriesStore.topLevelCategories
+})
+const sidebarTitle = computed(() => (currentCategory.value ? 'Подкатегории' : 'Категории'))
+const breadcrumbTrail = computed<Crumb[]>(() => {
+  const trail: Crumb[] = [{ label: 'Клубы', to: '/' }]
+  if (currentCategory.value) {
+    const path = categoriesStore.pathById(currentCategory.value.id)
+    path.forEach((c, i) => {
+      trail.push({
+        label: c.name,
+        to: i < path.length - 1 ? `/categories/${c.slug}` : undefined,
+      })
+    })
+  }
+  return trail
+})
 
 onMounted(async () => {
-  await clubsStore.fetchClubs()
+  await categoriesStore.fetchCategories()
+  await loadClubsByRoute()
 })
+
+watch(currentSlug, async () => {
+  await categoriesStore.fetchCategories()
+  await loadClubsByRoute()
+})
+
+const showScrollTop = ref(false)
+
+function onScroll() {
+  showScrollTop.value = window.scrollY > window.innerHeight * 0.6
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+})
+
+const loadClubsByRoute = async () => {
+  if (currentCategory.value) {
+    await clubsStore.filterByCategory(currentCategory.value.id)
+  } else {
+    if (clubsStore.activeFilter && clubsStore.activeFilter !== 'all') {
+      clubsStore.activeCategory = null
+      await clubsStore.filterByMembership(clubsStore.activeFilter)
+    } else {
+      await clubsStore.fetchClubs()
+    }
+  }
+}
+
+const goBackToCategories = () => {
+  router.push('/')
+}
 
 const isMember = (club: Club) => clubsStore.isCurrentUserMember(club)
 
@@ -60,78 +131,114 @@ const memberInitials = (club: Club) => {
 
 <template>
   <div class="clubs-page">
+    <BreadcrumbsNav :trail="breadcrumbTrail" :trailing-slash="!currentCategory">
+      <template #actions>
+        <button v-if="currentCategory" type="button" class="crumb-back" @click="goBackToCategories">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M11 18l-6-6 6-6" />
+          </svg>
+          Назад к категориям
+        </button>
+      </template>
+    </BreadcrumbsNav>
+
     <ClubFilters />
 
-    <Transition name="fade-slide" mode="out-in">
-      <div v-if="clubsStore.isLoading" key="loading" class="clubs-list clubs-loading">
-        <div v-for="n in 3" :key="n" class="skeleton-card">
-          <div class="skeleton-heading">
-            <div class="skeleton-line skeleton-title" />
-            <div class="skeleton-line skeleton-badge" />
-          </div>
-          <div class="skeleton-line skeleton-author" />
-          <div class="skeleton-line skeleton-desc" />
-          <div class="skeleton-line skeleton-desc skeleton-desc--short" />
-          <div class="skeleton-footer">
-            <div class="skeleton-line skeleton-members" />
-            <div class="skeleton-line skeleton-arrow" />
-          </div>
-        </div>
-      </div>
-      <div v-else-if="clubsStore.clubs.length === 0" key="empty" class="no-results">
-        <img src="@/assets/images/not-found.png" alt="Ничего не найдено" class="not-found-img" />
-      </div>
-      <div v-else class="clubs-list">
-        <div
-          v-for="club in clubsStore.clubs"
-          :key="club.id"
-          class="club-card"
-          @click="openClubPage(club.id)"
-        >
-          <div class="card-header">
-            <h3 class="card-title">{{ club.bookTitle }}</h3>
-            <span class="year-badge">{{ club.publicationYear }}</span>
-          </div>
-
-          <div class="card-author">{{ club.bookAuthors }}</div>
-
-          <p class="card-desc">{{ club.description }}</p>
-
-          <div class="card-footer">
-            <div class="card-members">
-              <div class="member-avatars">
-                <span
-                  v-for="(item, i) in memberInitials(club)"
-                  :key="i"
-                  class="member-avatar"
-                  :style="{ backgroundColor: item.color }"
-                >
-                  {{ item.initials }}
-                </span>
-                <span v-if="isMember(club)" class="you-badge">вы</span>
+    <div class="content-grid">
+      <div class="clubs-column">
+        <Transition name="fade-slide" mode="out-in">
+          <div v-if="clubsStore.isLoading" key="loading" class="clubs-list clubs-loading">
+            <div v-for="n in 3" :key="n" class="skeleton-card">
+              <div class="skeleton-heading">
+                <div class="skeleton-line skeleton-title" />
+                <div class="skeleton-line skeleton-badge" />
               </div>
-              <span class="member-count">{{ memberReadingText(club.members.length, isMember(club)) }}</span>
+              <div class="skeleton-line skeleton-author" />
+              <div class="skeleton-line skeleton-desc" />
+              <div class="skeleton-line skeleton-desc skeleton-desc--short" />
+              <div class="skeleton-footer">
+                <div class="skeleton-line skeleton-members" />
+                <div class="skeleton-line skeleton-arrow" />
+              </div>
             </div>
-
-            <span class="card-arrow" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14M13 5l7 7-7 7"/>
-              </svg>
-            </span>
           </div>
-        </div>
-      </div>
-    </Transition>
+          <div v-else-if="clubsStore.clubs.length === 0" key="empty" class="no-results">
+            <img src="@/assets/images/not-found.png" alt="Ничего не найдено" class="not-found-img" />
+          </div>
+          <div v-else class="clubs-list">
+            <div
+              v-for="club in clubsStore.clubs"
+              :key="club.id"
+              class="club-card"
+              @click="openClubPage(club.id)"
+            >
+              <div class="card-header">
+                <h3 class="card-title">{{ club.bookTitle }}</h3>
+                <span class="year-badge">{{ club.publicationYear }}</span>
+              </div>
 
-    <PaginationControls
-      v-if="clubsStore.clubs.length > 0 && !clubsStore.isLoading"
-      class="pagination-wrap"
-      :current-page="clubsStore.pagination.currentPage"
-      :total-pages="clubsStore.totalPages"
-      :page-size="clubsStore.pagination.pageSize"
-      @page-change="clubsStore.goToPage"
-      @page-size-change="clubsStore.changePageSize"
-    />
+              <div class="card-author">{{ club.bookAuthors }}</div>
+
+              <p class="card-desc">{{ club.description }}</p>
+
+              <div class="card-footer">
+                <div class="card-members">
+                  <div class="member-avatars">
+                    <span
+                      v-for="(item, i) in memberInitials(club)"
+                      :key="i"
+                      class="member-avatar"
+                      :style="{ backgroundColor: item.color }"
+                    >
+                      {{ item.initials }}
+                    </span>
+                    <span v-if="isMember(club)" class="you-badge">вы</span>
+                  </div>
+                  <span class="member-count">{{ memberReadingText(club.members.length, isMember(club)) }}</span>
+                </div>
+
+                <span class="card-arrow" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M13 5l7 7-7 7"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+        <PaginationControls
+          v-if="clubsStore.clubs.length >= 5 && !clubsStore.isLoading"
+          class="pagination-wrap"
+          :current-page="clubsStore.pagination.currentPage"
+          :total-pages="clubsStore.totalPages"
+          :page-size="clubsStore.pagination.pageSize"
+          @page-change="clubsStore.goToPage"
+          @page-size-change="clubsStore.changePageSize"
+        />
+      </div>
+
+      <CategorySidebar
+        :title="sidebarTitle"
+        :categories="sidebarCategories"
+        :active-id="currentCategory?.id"
+      />
+    </div>
+
+    <Transition name="scroll-top">
+      <button
+        v-if="showScrollTop"
+        type="button"
+        class="scroll-top"
+        aria-label="Наверх"
+        data-testid="scroll-top-button"
+        @click="scrollToTop"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M5 12l7-7 7 7" />
+        </svg>
+      </button>
+    </Transition>
   </div>
 </template>
 
@@ -141,8 +248,46 @@ const memberInitials = (club: Club) => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.crumb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.crumb-back svg {
+  flex-shrink: 0;
+}
+
+.content-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 704px) 300px;
+  justify-content: center;
+  gap: 24px 16px;
+  align-items: start;
+}
+
+.clubs-column {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 24px;
+  min-width: 0;
 }
 
 .clubs-list {
@@ -155,12 +300,12 @@ const memberInitials = (club: Club) => {
 }
 
 .pagination-wrap {
-  margin-top: auto;
+  width: 100%;
 }
 
 .club-card {
-  width: 704px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 704px;
   background: var(--color-surface);
   border-radius: 32px;
   padding: 28px;
@@ -305,8 +450,7 @@ const memberInitials = (club: Club) => {
 .no-results {
   display: flex;
   justify-content: center;
-  width: 704px;
-  max-width: 100%;
+  width: 100%;
 }
 
 .clubs-loading {
@@ -314,8 +458,8 @@ const memberInitials = (club: Club) => {
 }
 
 .skeleton-card {
-  width: 704px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 704px;
   background: var(--color-surface);
   border-radius: 32px;
   padding: 28px;
@@ -415,7 +559,21 @@ const memberInitials = (club: Club) => {
   transform: translateY(-12px);
 }
 
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clubs-column {
+    order: 1;
+  }
+}
+
 @media (max-width: 768px) {
+  .clubs-page {
+    gap: 16px;
+  }
+
   .club-card {
     width: 100%;
     padding: 20px;
@@ -473,6 +631,10 @@ const memberInitials = (club: Club) => {
 
   .clubs-list {
     gap: 12px;
+  }
+
+  .clubs-column {
+    gap: 16px;
   }
 
   .club-card {
@@ -564,6 +726,56 @@ const memberInitials = (club: Club) => {
   .skeleton-members {
     width: 100px;
     height: 28px;
+  }
+}
+
+.scroll-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-brand);
+  color: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(59, 62, 255, 0.35);
+  z-index: 40;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scroll-top:hover {
+  background: var(--color-brand);
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(59, 62, 255, 0.4);
+}
+
+.scroll-top:active {
+  transform: translateY(0);
+}
+
+.scroll-top-enter-active,
+.scroll-top-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.scroll-top-enter-from,
+.scroll-top-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (max-width: 480px) {
+  .scroll-top {
+    right: 16px;
+    bottom: 16px;
+    width: 48px;
+    height: 48px;
   }
 }
 </style>

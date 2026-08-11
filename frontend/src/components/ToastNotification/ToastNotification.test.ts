@@ -34,13 +34,13 @@ describe('ToastNotification', () => {
   it('applies error class for error type', () => {
     showToast('Error', 'error')
     const wrapper = createWrapper()
-    expect(wrapper.find('.toast').classes()).toContain('error')
+    expect(wrapper.find('.toast').classes()).toContain('toast--error')
   })
 
   it('applies success class for success type', () => {
     showToast('Success', 'success')
     const wrapper = createWrapper()
-    expect(wrapper.find('.toast').classes()).toContain('success')
+    expect(wrapper.find('.toast').classes()).toContain('toast--success')
   })
 
   it('hides toast on click', async () => {
@@ -48,6 +48,21 @@ describe('ToastNotification', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('.toast').exists()).toBe(true)
     await wrapper.find('.toast').trigger('click')
+    await nextTick()
+    expect(wrapper.find('.toast').exists()).toBe(false)
+  })
+
+  it('renders close button for every toast type', () => {
+    showToast('Success', 'success')
+    const wrapper = createWrapper()
+    expect(wrapper.find('.toast-close').exists()).toBe(true)
+  })
+
+  it('hides toast on close button click', async () => {
+    showToast('Close me', 'success')
+    const wrapper = createWrapper()
+    expect(wrapper.find('.toast').exists()).toBe(true)
+    await wrapper.find('.toast-close').trigger('click')
     await nextTick()
     expect(wrapper.find('.toast').exists()).toBe(false)
   })

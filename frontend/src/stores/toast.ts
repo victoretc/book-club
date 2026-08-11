@@ -16,7 +16,7 @@ const toast = ref<ToastState>({
 
 let timeout: ReturnType<typeof setTimeout> | null = null
 
-export function showToast(message: string, type: ToastType = 'error', duration = 6000) {
+export function showToast(message: string, type: ToastType = 'error', duration = 5000) {
   if (timeout) clearTimeout(timeout)
   toast.value = { visible: true, message, type }
   timeout = setTimeout(() => {

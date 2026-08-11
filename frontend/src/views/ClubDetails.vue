@@ -3,9 +3,12 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
+import { useCategoriesStore } from '@/stores/categories'
 import { pluralize, reviewLabel } from '@/utils/plural'
 import ClubReviews from '@/components/ClubReviews/ClubReviews.vue'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
+import BreadcrumbsNav from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
+import type { Crumb } from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import type { Club } from '@/api/Api'
 
 const route = useRoute()
@@ -13,10 +16,25 @@ const router = useRouter()
 
 const authStore = useAuthStore()
 const clubsStore = useClubsStore()
+const categoriesStore = useCategoriesStore()
 
 const club = ref<Club | null>(null)
 const isLoading = ref(false)
 const error = ref('')
+
+const breadcrumbTrail = computed<Crumb[]>(() => {
+  const trail: Crumb[] = [{ label: 'Клубы', to: '/' }]
+  if (club.value) {
+    if (club.value.category != null) {
+      const path = categoriesStore.pathById(club.value.category)
+      path.forEach((c) => {
+        trail.push({ label: c.name, to: `/categories/${c.slug}` })
+      })
+    }
+    trail.push({ label: club.value.bookTitle })
+  }
+  return trail
+})
 
 const isMember = computed(() => {
   return club.value ? clubsStore.isCurrentUserMember(club.value) : false
@@ -72,11 +90,17 @@ async function handleLeave() {
   }
 }
 
-onMounted(fetchClub)
+onMounted(async () => {
+  await categoriesStore.fetchCategories()
+  await fetchClub()
+})
 </script>
 
 <template>
   <div class="detail-page" data-testid="club-details-page">
+    <BreadcrumbsNav v-if="club" :trail="breadcrumbTrail" />
+
+    <div class="detail-card-wrap">
     <div v-if="isLoading" class="skeleton" data-testid="club-details-skeleton">
       <div class="skeleton-card">
         <div class="skeleton-line skeleton-line--title" />
@@ -173,11 +197,20 @@ onMounted(fetchClub)
 
       <ClubReviews data-testid="club-details-reviews" :club-id="club.id" :club-members="club.members" :club-owner="club.owner" />
     </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .detail-page {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detail-card-wrap {
   width: 100%;
   max-width: 704px;
   margin: 0 auto;

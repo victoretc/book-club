@@ -113,11 +113,11 @@ export const useClubsStore = defineStore('clubs', {
     async filterByCategory(categoryId: number, page: number = 1, pageSize: number = 10) {
       this.activeCategory = categoryId
       this.activeSearch = null
-      this.activeFilter = 'all'
-      await this._fetchClubsWithParams(
-        { category: categoryId, page, page_size: pageSize },
-        'Ошибка при фильтрации по категории',
-      )
+      const params: ClubsListParams = { category: categoryId, page, page_size: pageSize }
+      if (this.activeFilter && this.activeFilter !== 'all') {
+        params.membership = this.activeFilter
+      }
+      await this._fetchClubsWithParams(params, 'Ошибка при фильтрации по категории')
     },
 
     async nextPage() {

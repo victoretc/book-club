@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { showToast } from '@/stores/toast'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 const authStore = useAuthStore()
@@ -24,8 +25,6 @@ const error = ref('')
 const success = ref('')
 
 const isUpdatingVisibility = ref(false)
-const visibilityMessage = ref('')
-const visibilityError = ref('')
 
 const isReadingListPublic = computed(() => !!authStore.user?.isReadingListPublic)
 
@@ -37,21 +36,29 @@ const readingListUrl = computed(() => {
 const toggleReadingListVisibility = async () => {
   const nextValue = !isReadingListPublic.value
   isUpdatingVisibility.value = true
-  visibilityError.value = ''
-  visibilityMessage.value = ''
 
   try {
     await authStore.updateUser({ isReadingListPublic: nextValue })
     if (authStore.user) {
       authStore.user.isReadingListPublic = nextValue
     }
-    visibilityMessage.value = nextValue
-      ? 'Страница прочитанных книг опубликована'
-      : 'Страница прочитанных книг скрыта'
+    showToast(
+      nextValue ? 'Страница прочитанных книг опубликована' : 'Страница прочитанных книг скрыта',
+      'success',
+    )
   } catch {
-    visibilityError.value = 'Не удалось обновить видимость страницы'
+    showToast('Не удалось обновить видимость страницы', 'error')
   } finally {
     isUpdatingVisibility.value = false
+  }
+}
+
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(readingListUrl.value)
+    showToast('Ссылка скопирована', 'success')
+  } catch {
+    showToast('Не удалось скопировать ссылку', 'error')
   }
 }
 
@@ -235,12 +242,8 @@ const updateProfile = async () => {
         книги из клубов, участником которых ты являешься, а также твои отзывы, если ты их оставил.
       </p>
 
-      <div v-if="visibilityMessage" class="msg msg--success">{{ visibilityMessage }}</div>
-      <div v-if="visibilityError" class="msg msg--error">{{ visibilityError }}</div>
-
       <template v-if="isReadingListPublic">
         <div class="reading-list-link">
-          <span class="link-label">Ссылка на страницу:</span>
           <a
             :href="readingListUrl"
             target="_blank"
@@ -250,10 +253,22 @@ const updateProfile = async () => {
           >
             {{ readingListUrl }}
           </a>
+          <button
+            type="button"
+            class="link-copy"
+            aria-label="Скопировать ссылку"
+            data-testid="reading-list-copy-button"
+            @click="copyLink"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </button>
         </div>
 
         <BaseButton
-          variant="outline"
+          variant="brand-outline"
           full-width
           testId="reading-list-open-button"
           @click="openReadingList"
@@ -446,7 +461,7 @@ const updateProfile = async () => {
 
 .reading-list-title {
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 500;
   color: var(--color-text);
   margin: 0;
@@ -455,7 +470,7 @@ const updateProfile = async () => {
 
 .reading-list-text {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--color-text-secondary);
   text-align: center;
@@ -464,28 +479,57 @@ const updateProfile = async () => {
 
 .reading-list-link {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 16px;
   background: var(--color-bg);
-  border-radius: 12px;
-}
-
-.link-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 16px;
 }
 
 .link-value {
-  font-size: 14px;
-  color: var(--color-brand);
-  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .link-value:hover {
-  text-decoration: underline;
+  color: var(--color-brand);
+}
+
+.link-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.link-copy:hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.link-copy:active {
+  filter: brightness(0.92);
 }
 
 @media (max-width: 600px) {

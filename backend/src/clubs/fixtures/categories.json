@@ -27,8 +27,8 @@
     "model": "clubs.category",
     "pk": 11,
     "fields": {
-      "name": "Программирование",
-      "slug": "programming",
+      "name": "Тестирование",
+      "slug": "testing",
       "parent": 1,
       "position": 1,
       "created": "2026-01-01T12:00:00Z",
@@ -39,8 +39,8 @@
     "model": "clubs.category",
     "pk": 12,
     "fields": {
-      "name": "Веб-разработка",
-      "slug": "web-development",
+      "name": "Дизайн",
+      "slug": "design",
       "parent": 1,
       "position": 2,
       "created": "2026-01-01T12:00:00Z",
@@ -51,8 +51,8 @@
     "model": "clubs.category",
     "pk": 13,
     "fields": {
-      "name": "Мобильная разработка",
-      "slug": "mobile-development",
+      "name": "Разработка",
+      "slug": "development",
       "parent": 1,
       "position": 3,
       "created": "2026-01-01T12:00:00Z",
@@ -63,8 +63,8 @@
     "model": "clubs.category",
     "pk": 14,
     "fields": {
-      "name": "Data Science и аналитика",
-      "slug": "data-science",
+      "name": "Менеджмент",
+      "slug": "management",
       "parent": 1,
       "position": 4,
       "created": "2026-01-01T12:00:00Z",
@@ -75,8 +75,8 @@
     "model": "clubs.category",
     "pk": 15,
     "fields": {
-      "name": "Искусственный интеллект",
-      "slug": "artificial-intelligence",
+      "name": "Рекрутинг",
+      "slug": "recruiting",
       "parent": 1,
       "position": 5,
       "created": "2026-01-01T12:00:00Z",
@@ -87,8 +87,8 @@
     "model": "clubs.category",
     "pk": 16,
     "fields": {
-      "name": "Базы данных",
-      "slug": "databases",
+      "name": "Аналитика",
+      "slug": "analytics",
       "parent": 1,
       "position": 6,
       "created": "2026-01-01T12:00:00Z",
@@ -99,7 +99,7 @@
     "model": "clubs.category",
     "pk": 17,
     "fields": {
-      "name": "DevOps и инфраструктура",
+      "name": "ДевОпс",
       "slug": "devops",
       "parent": 1,
       "position": 7,
@@ -109,22 +109,10 @@
   },
   {
     "model": "clubs.category",
-    "pk": 18,
-    "fields": {
-      "name": "Кибербезопасность",
-      "slug": "cybersecurity",
-      "parent": 1,
-      "position": 8,
-      "created": "2026-01-01T12:00:00Z",
-      "modified": null
-    }
-  },
-  {
-    "model": "clubs.category",
     "pk": 21,
     "fields": {
-      "name": "Менеджмент",
-      "slug": "management",
+      "name": "Экономика",
+      "slug": "economics",
       "parent": 2,
       "position": 1,
       "created": "2026-01-01T12:00:00Z",
@@ -135,8 +123,8 @@
     "model": "clubs.category",
     "pk": 22,
     "fields": {
-      "name": "Маркетинг",
-      "slug": "marketing",
+      "name": "Истории успеха",
+      "slug": "success-stories",
       "parent": 2,
       "position": 2,
       "created": "2026-01-01T12:00:00Z",
@@ -147,58 +135,10 @@
     "model": "clubs.category",
     "pk": 23,
     "fields": {
-      "name": "Продажи",
-      "slug": "sales",
+      "name": "Ведение переговоров",
+      "slug": "negotiations",
       "parent": 2,
       "position": 3,
-      "created": "2026-01-01T12:00:00Z",
-      "modified": null
-    }
-  },
-  {
-    "model": "clubs.category",
-    "pk": 24,
-    "fields": {
-      "name": "Финансы и инвестиции",
-      "slug": "finance-and-investments",
-      "parent": 2,
-      "position": 4,
-      "created": "2026-01-01T12:00:00Z",
-      "modified": null
-    }
-  },
-  {
-    "model": "clubs.category",
-    "pk": 25,
-    "fields": {
-      "name": "Стартапы",
-      "slug": "startups",
-      "parent": 2,
-      "position": 5,
-      "created": "2026-01-01T12:00:00Z",
-      "modified": null
-    }
-  },
-  {
-    "model": "clubs.category",
-    "pk": 26,
-    "fields": {
-      "name": "Карьера и переговоры",
-      "slug": "career-and-negotiations",
-      "parent": 2,
-      "position": 6,
-      "created": "2026-01-01T12:00:00Z",
-      "modified": null
-    }
-  },
-  {
-    "model": "clubs.category",
-    "pk": 27,
-    "fields": {
-      "name": "Экономика",
-      "slug": "economics",
-      "parent": 2,
-      "position": 7,
       "created": "2026-01-01T12:00:00Z",
       "modified": null
     }
