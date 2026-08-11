@@ -123,7 +123,15 @@ const memberInitials = (club: Club) => {
       </div>
     </Transition>
 
-    <PaginationControls v-if="clubsStore.clubs.length > 0 && !clubsStore.isLoading" class="pagination-wrap" />
+    <PaginationControls
+      v-if="clubsStore.clubs.length > 0 && !clubsStore.isLoading"
+      class="pagination-wrap"
+      :current-page="clubsStore.pagination.currentPage"
+      :total-pages="clubsStore.totalPages"
+      :page-size="clubsStore.pagination.pageSize"
+      @page-change="clubsStore.goToPage"
+      @page-size-change="clubsStore.changePageSize"
+    />
   </div>
 </template>
 

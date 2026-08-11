@@ -398,6 +398,73 @@ export interface PatchedUserRequest {
    * @maxLength 254
    */
   email?: string;
+  /** Reading list is public */
+  isReadingListPublic?: boolean;
+}
+
+export interface ReadingListBook {
+  id: number;
+  /** @maxLength 255 */
+  bookTitle: string;
+  /** @maxLength 255 */
+  bookAuthors: string;
+  /**
+   * @min -2147483648
+   * @max 2147483647
+   */
+  publicationYear: number;
+  /** Book Description */
+  description: string;
+  review: ReadingListReview | null;
+}
+
+export interface ReadingListResponse {
+  count: number;
+  next?: string | null;
+  previous?: string | null;
+  user: ReadingListUser;
+  results: ReadingListBook[];
+}
+
+export interface ReadingListReview {
+  id: number;
+  /** Book Review */
+  review: string;
+  /**
+   * @min 1
+   * @max 5
+   */
+  assessment: number;
+  /**
+   * @min -2147483648
+   * @max 2147483647
+   */
+  readPages: number;
+  /**
+   * Дата создания
+   * @format date-time
+   */
+  created: string;
+}
+
+export interface ReadingListUser {
+  id: number;
+  /**
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @maxLength 150
+   * @pattern ^[\w.@+-]+$
+   */
+  username: string;
+  /** @maxLength 150 */
+  firstName?: string;
+  /** @maxLength 150 */
+  lastName?: string;
+  /**
+   * Email address
+   * @format email
+   * @maxLength 254
+   */
+  email?: string;
 }
 
 export interface RequestCode {
@@ -1428,6 +1495,31 @@ export class Api<
     ) =>
       this.request<Record<string, any>, any>({
         path: `/api/v1/docs/schema/`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags users
+     * @name UsersBooksRetrieve
+     * @request GET:/api/v1/users/{id}/books/
+     * @secure
+     */
+    usersBooksRetrieve: (
+      id: number,
+      query?: {
+        page?: number;
+        page_size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ReadingListResponse, any>({
+        path: `/api/v1/users/${id}/books/`,
         method: "GET",
         query: query,
         secure: true,

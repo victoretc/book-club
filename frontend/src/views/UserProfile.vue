@@ -23,6 +23,44 @@ const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
 
+const isUpdatingVisibility = ref(false)
+const visibilityMessage = ref('')
+const visibilityError = ref('')
+
+const isReadingListPublic = computed(() => !!authStore.user?.isReadingListPublic)
+
+const readingListUrl = computed(() => {
+  if (!authStore.user) return ''
+  return `${window.location.origin}/users/${authStore.user.id}/books`
+})
+
+const toggleReadingListVisibility = async () => {
+  const nextValue = !isReadingListPublic.value
+  isUpdatingVisibility.value = true
+  visibilityError.value = ''
+  visibilityMessage.value = ''
+
+  try {
+    await authStore.updateUser({ isReadingListPublic: nextValue })
+    if (authStore.user) {
+      authStore.user.isReadingListPublic = nextValue
+    }
+    visibilityMessage.value = nextValue
+      ? 'Страница прочитанных книг опубликована'
+      : 'Страница прочитанных книг скрыта'
+  } catch {
+    visibilityError.value = 'Не удалось обновить видимость страницы'
+  } finally {
+    isUpdatingVisibility.value = false
+  }
+}
+
+const openReadingList = () => {
+  if (readingListUrl.value) {
+    window.open(readingListUrl.value, '_blank', 'noopener,noreferrer')
+  }
+}
+
 const editForm = ref({
   username: '',
   firstName: '',
@@ -189,6 +227,64 @@ const updateProfile = async () => {
         </form>
       </div>
     </div>
+
+    <div class="reading-list-card" data-testid="reading-list-block">
+      <h2 class="reading-list-title">Страница прочитанных книг</h2>
+      <p class="reading-list-text">
+        Опубликуй страницу прочитанных книг, чтобы поделиться ею с друзьями. На ней появятся
+        книги из клубов, участником которых ты являешься, а также твои отзывы, если ты их оставил.
+      </p>
+
+      <div v-if="visibilityMessage" class="msg msg--success">{{ visibilityMessage }}</div>
+      <div v-if="visibilityError" class="msg msg--error">{{ visibilityError }}</div>
+
+      <template v-if="isReadingListPublic">
+        <div class="reading-list-link">
+          <span class="link-label">Ссылка на страницу:</span>
+          <a
+            :href="readingListUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link-value"
+            data-testid="reading-list-link"
+          >
+            {{ readingListUrl }}
+          </a>
+        </div>
+
+        <BaseButton
+          variant="outline"
+          full-width
+          testId="reading-list-open-button"
+          @click="openReadingList"
+        >
+          Открыть мою страницу
+        </BaseButton>
+
+        <BaseButton
+          variant="danger"
+          full-width
+          :loading="isUpdatingVisibility"
+          :disabled="isUpdatingVisibility"
+          testId="reading-list-hide-button"
+          @click="toggleReadingListVisibility"
+        >
+          Скрыть страницу прочитанных мной книг
+        </BaseButton>
+      </template>
+
+      <BaseButton
+        v-else
+        variant="primary"
+        full-width
+        :loading="isUpdatingVisibility"
+        :disabled="isUpdatingVisibility"
+        testId="reading-list-publish-button"
+        @click="toggleReadingListVisibility"
+      >
+        Опубликовать страницу прочитанных мной книг
+      </BaseButton>
+    </div>
   </div>
 </template>
 
@@ -336,6 +432,66 @@ const updateProfile = async () => {
 .form-actions {
   display: flex;
   gap: 12px;
+}
+
+.reading-list-card {
+  margin-top: 20px;
+  background: var(--color-surface);
+  border-radius: 32px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reading-list-title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
+  text-align: center;
+}
+
+.reading-list-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+}
+
+.reading-list-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-radius: 12px;
+}
+
+.link-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.link-value {
+  font-size: 14px;
+  color: var(--color-brand);
+  word-break: break-all;
+  text-decoration: none;
+}
+
+.link-value:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .reading-list-card {
+    padding: 24px;
+  }
 }
 
 @media (max-width: 600px) {

@@ -10,6 +10,7 @@ type AuthUser = User & {
   lastName?: string
   email?: string
   remoteAddr?: string
+  isReadingListPublic?: boolean
 }
 
 export const useAuthStore = defineStore('auth', () => {

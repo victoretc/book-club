@@ -62,6 +62,12 @@ const router = createRouter({
       },
     },
     {
+      path: '/users/:id/books',
+      name: 'user-books',
+      component: () => import('@/views/UserBooks.vue'),
+      meta: { title: 'Прочитанные книги' },
+    },
+    {
       path: '/',
       name: 'clubs',
       component: () => import('@/views/ClubCards.vue'),

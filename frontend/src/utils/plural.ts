@@ -23,3 +23,7 @@ export function memberReadingText(memberCount: number, isCurrentUserMember: bool
   const verb = memberCount === 1 ? 'читает' : 'читают'
   return `${memberLabel(memberCount)} уже ${verb}`
 }
+
+export function pagesLabel(count: number): string {
+  return `${count} ${pluralize(count, ['страница', 'страницы', 'страниц'])}`
+}

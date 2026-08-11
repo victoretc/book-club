@@ -1,12 +1,25 @@
-from django.db.models import QuerySet
+from django.db.models import Prefetch, QuerySet
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from app.api.pagination import AppPagination
 from app.api.request import AuthenticatedRequest
-from users.api.serializers import UserRegisterSerializer, UserSerializer
+from clubs.models import BookReview, Club
+from users.api.serializers import (
+    ReadingListBookSerializer,
+    ReadingListResponseSerializer,
+    ReadingListUserSerializer,
+    UserRegisterSerializer,
+    UserSerializer,
+)
 from users.api.services import UserRegisterService
 from users.models import User
 
@@ -66,3 +79,36 @@ class RegisterView(GenericAPIView):
 
         user_serializer = UserSerializer(user, context=self.get_serializer_context())
         return Response(user_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class UserBooksView(GenericAPIView):
+    serializer_class = ReadingListBookSerializer
+    permission_classes = [AllowAny]
+    pagination_class = AppPagination
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("page", type=OpenApiTypes.INT, required=False),
+            OpenApiParameter("page_size", type=OpenApiTypes.INT, required=False),
+        ],
+        responses=ReadingListResponseSerializer,
+    )
+    def get(self, request: Request, pk: int) -> Response:
+        user = get_object_or_404(User, pk=pk, is_active=True)
+
+        if not user.is_reading_list_public:
+            raise NotFound(_("Reading list is hidden."))
+
+        queryset = (
+            Club.objects.filter(members=user)
+            .select_related("owner")
+            .prefetch_related(Prefetch("reviews", queryset=BookReview.objects.filter(user=user)))
+            .order_by("id")
+        )
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+
+        data = self.get_paginated_response(serializer.data).data
+        data["user"] = ReadingListUserSerializer(user).data
+        return Response(data)

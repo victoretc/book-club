@@ -11,3 +11,17 @@ export function formatDate(dateString?: string): string {
     year: 'numeric',
   })
 }
+
+interface DisplayNameUser {
+  firstName?: string
+  lastName?: string
+  email?: string
+  username?: string
+}
+
+export function userDisplayName(user: DisplayNameUser): string {
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
+  if (name) return name
+  if (user.email) return user.email
+  return user.username || 'Пользователь'
+}

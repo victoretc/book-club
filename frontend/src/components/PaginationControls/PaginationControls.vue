@@ -1,36 +1,50 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useClubsStore } from '@/stores/clubs'
-import { storeToRefs } from 'pinia'
+import { ref, watch } from 'vue'
 
-const clubsStore = useClubsStore()
-const { totalPages, pagination } = storeToRefs(clubsStore)
+const props = withDefaults(
+  defineProps<{
+    currentPage: number
+    totalPages: number
+    pageSize: number
+  }>(),
+  {
+    currentPage: 1,
+    totalPages: 1,
+    pageSize: 10,
+  },
+)
 
-const currentPage = computed(() => pagination.value.currentPage)
-const pageSize = computed({
-  get: () => pagination.value.pageSize,
-  set: (value) => clubsStore.changePageSize(Number(value)),
-})
+const emit = defineEmits<{
+  pageChange: [page: number]
+  pageSizeChange: [size: number]
+}>()
 
 const pageSizes = [5, 10, 15, 20, 25]
 const isSelectOpen = ref(false)
-const selectedSize = ref(pageSize.value)
+const selectedSize = ref(props.pageSize)
+
+watch(
+  () => props.pageSize,
+  (value) => {
+    selectedSize.value = value
+  },
+)
 
 const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    clubsStore.goToPage(page)
+  if (page >= 1 && page <= props.totalPages) {
+    emit('pageChange', page)
   }
 }
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    clubsStore.nextPage()
+  if (props.currentPage < props.totalPages) {
+    emit('pageChange', props.currentPage + 1)
   }
 }
 
 const prevPage = () => {
-  if (currentPage.value > 1) {
-    clubsStore.prevPage()
+  if (props.currentPage > 1) {
+    emit('pageChange', props.currentPage - 1)
   }
 }
 
@@ -40,8 +54,8 @@ const toggleSelect = () => {
 
 const selectOption = (size: number) => {
   if (size !== selectedSize.value) {
-    pageSize.value = size
     selectedSize.value = size
+    emit('pageSizeChange', size)
   }
   isSelectOpen.value = false
 }
