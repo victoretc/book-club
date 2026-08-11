@@ -442,6 +442,7 @@ const memberInitials = (club: Club) => {
 
   .not-found-img {
     max-width: 100%;
+    width: 240px;
     height: auto;
   }
 

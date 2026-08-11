@@ -65,48 +65,44 @@ onBeforeUnmount(() => {
           <div class="modal-art" aria-hidden="true">
             <svg class="modal-art-svg" viewBox="0 0 300 140" fill="none">
               <defs>
-                <linearGradient id="clubInstructionAccent" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="var(--color-accent)" />
-                  <stop offset="1" stop-color="#7ED600" />
+                <linearGradient
+                  id="modal-cover-grad"
+                  x1="86"
+                  y1="64"
+                  x2="214"
+                  y2="124"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0" stop-color="#5A5DFF" />
+                  <stop offset="1" stop-color="#3336FF" />
                 </linearGradient>
-                <linearGradient id="clubInstructionBrand" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#5B5EFF" />
-                  <stop offset="1" stop-color="#282BF0" />
-                </linearGradient>
-                <filter id="clubInstructionShadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(26, 28, 43, 0.16)" />
-                </filter>
               </defs>
 
-              <ellipse cx="150" cy="70" rx="118" ry="50" fill="var(--color-accent)" opacity="0.12" />
+              <circle cx="62" cy="-30" r="78" fill="var(--color-brand-soft)" />
+              <circle cx="252" cy="86" r="19" fill="none" stroke="var(--color-brand-soft)" stroke-width="6" />
 
-              <circle cx="24" cy="30" r="6" fill="var(--color-brand-soft)" />
-              <circle cx="40" cy="46" r="4" fill="var(--color-brand)" />
-              <circle cx="12" cy="52" r="3.5" fill="var(--color-accent)" />
+              <ellipse cx="150" cy="128" rx="74" ry="7" fill="rgba(26, 28, 43, 0.06)" />
 
-              <g filter="url(#clubInstructionShadow)">
-                <rect x="62" y="16" width="150" height="52" rx="26" fill="url(#clubInstructionAccent)" />
-                <path d="M90 68 L84 90 L106 68 Z" fill="url(#clubInstructionAccent)" />
-              </g>
-              <rect x="88" y="34" width="92" height="8" rx="4" fill="rgba(26, 28, 43, 0.22)" />
-              <rect x="88" y="50" width="58" height="8" rx="4" fill="rgba(26, 28, 43, 0.22)" />
+              <path d="M150 64 C 128 66, 104 70, 82 76 L 82 112 C 106 118, 126 120, 150 126 Z" fill="url(#modal-cover-grad)" />
+              <path d="M150 64 C 172 66, 196 70, 218 76 L 218 112 C 194 118, 174 120, 150 126 Z" fill="url(#modal-cover-grad)" />
 
-              <g filter="url(#clubInstructionShadow)">
-                <rect x="218" y="60" width="52" height="36" rx="18" fill="var(--color-surface)" stroke="url(#clubInstructionBrand)" stroke-width="3" />
-                <path d="M232 96 L225 116 L246 96 Z" fill="var(--color-surface)" stroke="url(#clubInstructionBrand)" stroke-width="3" />
-              </g>
-              <circle cx="244" cy="78" r="4.5" fill="url(#clubInstructionBrand)" />
+              <path d="M150 58 C 134 60, 112 63, 88 68 L 88 106 C 112 111, 134 112, 150 117 Z" fill="#FFFFFF" />
+              <path d="M150 58 C 166 60, 188 63, 212 68 L 212 106 C 188 111, 166 112, 150 117 Z" fill="#FFFFFF" />
 
-              <g filter="url(#clubInstructionShadow)">
-                <rect x="170" y="20" width="28" height="28" rx="14" fill="url(#clubInstructionBrand)" />
-                <path d="M178 48 L172 60 L186 48 Z" fill="url(#clubInstructionBrand)" />
-              </g>
-              <circle cx="184" cy="34" r="3.5" fill="#FFFFFF" />
+              <path d="M150 58 L150 117" stroke="rgba(26, 28, 43, 0.1)" stroke-width="1.5" />
 
-              <path
-                d="M254 20 L257 31 L268 34 L257 37 L254 48 L251 37 L240 34 L251 31 Z"
-                fill="var(--color-accent)"
-              />
+              <path d="M101 81 L133 78" stroke="var(--color-brand)" stroke-opacity="0.15" stroke-width="5" stroke-linecap="round" />
+              <path d="M101 93 L126 90" stroke="var(--color-brand)" stroke-opacity="0.15" stroke-width="5" stroke-linecap="round" />
+              <path d="M101 105 L115 103" stroke="var(--color-brand)" stroke-opacity="0.15" stroke-width="5" stroke-linecap="round" />
+              <path d="M167 78 L199 81" stroke="var(--color-brand)" stroke-opacity="0.15" stroke-width="5" stroke-linecap="round" />
+              <path d="M174 90 L199 93" stroke="var(--color-brand)" stroke-opacity="0.15" stroke-width="5" stroke-linecap="round" />
+              <path d="M185 103 L199 105" stroke="var(--color-brand)" stroke-opacity="0.15" stroke-width="5" stroke-linecap="round" />
+
+              <path d="M146 32 h8 v20 l-4 5 -4 -5 z" fill="var(--color-accent)" />
+
+              <path d="M238 38 v12 M232 44 h12" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" />
+              <circle cx="94" cy="38" r="2.5" fill="var(--color-brand)" opacity="0.4" />
+              <circle cx="42" cy="116" r="3" fill="var(--color-accent)" opacity="0.5" />
             </svg>
           </div>
 
