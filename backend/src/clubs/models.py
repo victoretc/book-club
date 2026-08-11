@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -75,6 +76,16 @@ class ClubRequest(TimestampedModel):
         verbose_name = _("Club Request")
         verbose_name_plural = _("Club Requests")
         ordering = ["-created"]
+
+    def clean(self) -> None:
+        if self.status == self.Status.APPROVED and not self.telegram_chat_link:
+            raise ValidationError(
+                {
+                    "telegram_chat_link": _(
+                        "Telegram chat link is required to approve the request."
+                    )
+                }
+            )
 
     def __str__(self) -> str:
         return _("Request for '%(book_title)s'") % {"book_title": self.book_title}

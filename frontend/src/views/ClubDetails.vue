@@ -158,14 +158,14 @@ onMounted(fetchClub)
             Покинуть клуб
           </BaseButton>
 
-          <BaseButton
+          <!-- <BaseButton
             v-if="isOwner"
             variant="outline"
             testId="club-details-edit-button"
             @click="router.push(`/clubs/${club.id}/edit`)"
           >
             Редактировать
-          </BaseButton>
+          </BaseButton> -->
         </template>
       </div>
 

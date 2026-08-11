@@ -183,6 +183,11 @@ export const useClubsStore = defineStore('clubs', {
         this.isLoading = false
       }
     },
+
+    async ownedClubsCount(): Promise<number> {
+      const response = await api.api.clubsList({ membership: 'owner', page: 1, page_size: 1 })
+      return response.data.count
+    },
   },
 
   getters: {

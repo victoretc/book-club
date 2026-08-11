@@ -6,7 +6,7 @@ const meta = {
   component: ClubFormInstruction,
   tags: ['autodocs'],
   parameters: {
-    layout: 'padded',
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof ClubFormInstruction>
 
@@ -14,5 +14,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  args: {},
+  args: {
+    open: true,
+  },
 }

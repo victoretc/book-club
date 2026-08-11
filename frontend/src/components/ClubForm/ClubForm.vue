@@ -154,8 +154,6 @@ const onSubmit = handleSubmit(async (values) => {
 <style scoped>
 .form-card {
   width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
   background: var(--color-surface);
   border-radius: 32px;
   padding: 36px 32px 32px;

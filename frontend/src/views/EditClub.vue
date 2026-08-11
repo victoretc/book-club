@@ -10,3 +10,10 @@ const route = useRoute()
     <ClubForm :club-id="Number(route.params.id)" />
   </div>
 </template>
+
+<style scoped>
+.edit-club {
+  max-width: 640px;
+  margin: 0 auto;
+}
+</style>

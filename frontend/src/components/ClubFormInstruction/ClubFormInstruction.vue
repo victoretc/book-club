@@ -1,110 +1,281 @@
 <script setup lang="ts">
+import { onMounted, onBeforeUnmount, ref } from 'vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
+
+const props = defineProps<{ open: boolean }>()
+const emit = defineEmits<{ close: [] }>()
+
+const dialogRef = ref<HTMLElement | null>(null)
+const closeButtonRef = ref<HTMLButtonElement | null>(null)
+let previouslyFocused: HTMLElement | null = null
+
+function close() {
+  emit('close')
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    close()
+  }
+}
+
+onMounted(() => {
+  if (props.open) {
+    previouslyFocused = document.activeElement as HTMLElement | null
+    closeButtonRef.value?.focus()
+  }
+})
+
+onBeforeUnmount(() => {
+  previouslyFocused?.focus?.()
+})
 </script>
 
 <template>
-  <aside class="instruction" data-testid="club-form-instruction">
-    <div class="instruction-figures" aria-hidden="true">
-      <svg class="figure figure--circle" width="120" height="120" viewBox="0 0 120 120" fill="none">
-        <circle cx="60" cy="60" r="58" stroke="var(--color-accent)" stroke-width="4" />
-        <circle cx="60" cy="60" r="40" fill="var(--color-accent)" />
-      </svg>
-      <svg class="figure figure--spark" width="64" height="64" viewBox="0 0 64 64" fill="none">
-        <path d="M32 2 L38 26 L62 32 L38 38 L32 62 L26 38 L2 32 L26 26 Z" fill="var(--color-accent)" />
-      </svg>
-      <svg class="figure figure--blob" width="96" height="64" viewBox="0 0 96 64" fill="none">
-        <path
-          d="M48 4 C62 4 70 14 78 20 C86 26 96 22 94 32 C92 42 80 44 70 50 C60 56 54 60 44 60 C34 60 24 56 16 50 C8 44 0 40 2 30 C4 20 12 18 22 14 C30 10 36 4 48 4 Z"
-          fill="var(--color-accent)"
-          fill-opacity="0.25"
-        />
-      </svg>
-    </div>
+  <Teleport to="body">
+    <Transition name="modal">
+      <div
+        v-if="open"
+        class="modal-overlay"
+        role="presentation"
+        @click.self="close"
+        @keydown.esc="onKeydown"
+      >
+        <div
+          ref="dialogRef"
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="club-form-instruction-title"
+          data-testid="club-form-instruction"
+        >
+          <button
+            ref="closeButtonRef"
+            type="button"
+            class="modal-close"
+            aria-label="Закрыть"
+            data-testid="club-form-instruction-close-button"
+            @click="close"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 1 L13 13 M13 1 L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
 
-    <h2 class="instruction-title">Как создать клуб</h2>
+          <div class="modal-art" aria-hidden="true">
+            <svg class="modal-art-svg" viewBox="0 0 300 140" fill="none">
+              <defs>
+                <linearGradient id="clubInstructionAccent" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="var(--color-accent)" />
+                  <stop offset="1" stop-color="#7ED600" />
+                </linearGradient>
+                <linearGradient id="clubInstructionBrand" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#5B5EFF" />
+                  <stop offset="1" stop-color="#282BF0" />
+                </linearGradient>
+                <filter id="clubInstructionShadow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(26, 28, 43, 0.16)" />
+                </filter>
+              </defs>
 
-    <p class="instruction-text">
-      Приветствую! На странице клубов ты можешь найти все доступные на данный момент клубы.
-      Если ты хочешь найти участников для книги, которой сейчас нет на просторах Читальной — ты
-      можешь попросить админов создать клуб.
-    </p>
+              <ellipse cx="150" cy="70" rx="118" ry="50" fill="var(--color-accent)" opacity="0.12" />
 
-    <p class="instruction-text">
-      Введи <strong>Название книги</strong> *, <strong>Автор(ы) книги</strong> *, <strong>Описание книги</strong> *
-      в форму, и администратор создаст чаты в Max, Telegram, клуб появится на главной странице,
-      и тебе придет уведомление на почту о том, что клуб был создан.
-    </p>
-  </aside>
+              <circle cx="24" cy="30" r="6" fill="var(--color-brand-soft)" />
+              <circle cx="40" cy="46" r="4" fill="var(--color-brand)" />
+              <circle cx="12" cy="52" r="3.5" fill="var(--color-accent)" />
+
+              <g filter="url(#clubInstructionShadow)">
+                <rect x="62" y="16" width="150" height="52" rx="26" fill="url(#clubInstructionAccent)" />
+                <path d="M90 68 L84 90 L106 68 Z" fill="url(#clubInstructionAccent)" />
+              </g>
+              <rect x="88" y="34" width="92" height="8" rx="4" fill="rgba(26, 28, 43, 0.22)" />
+              <rect x="88" y="50" width="58" height="8" rx="4" fill="rgba(26, 28, 43, 0.22)" />
+
+              <g filter="url(#clubInstructionShadow)">
+                <rect x="218" y="60" width="52" height="36" rx="18" fill="var(--color-surface)" stroke="url(#clubInstructionBrand)" stroke-width="3" />
+                <path d="M232 96 L225 116 L246 96 Z" fill="var(--color-surface)" stroke="url(#clubInstructionBrand)" stroke-width="3" />
+              </g>
+              <circle cx="244" cy="78" r="4.5" fill="url(#clubInstructionBrand)" />
+
+              <g filter="url(#clubInstructionShadow)">
+                <rect x="170" y="20" width="28" height="28" rx="14" fill="url(#clubInstructionBrand)" />
+                <path d="M178 48 L172 60 L186 48 Z" fill="url(#clubInstructionBrand)" />
+              </g>
+              <circle cx="184" cy="34" r="3.5" fill="#FFFFFF" />
+
+              <path
+                d="M254 20 L257 31 L268 34 L257 37 L254 48 L251 37 L240 34 L251 31 Z"
+                fill="var(--color-accent)"
+              />
+            </svg>
+          </div>
+
+          <h2 id="club-form-instruction-title" class="modal-title">Как создать клуб</h2>
+
+          <p class="modal-text">
+            Приветствую! На странице клубов ты можешь найти все доступные на данный момент клубы.
+            Если ты хочешь найти участников для книги, которой сейчас нет на просторах Читальной,
+            ты можешь отправить запрос на создание клуба.
+          </p>
+
+          <p class="modal-text">
+            Введи <strong>Название книги</strong>, <strong>Авторов(а) книги</strong>, <strong>Описание книги</strong>
+            в форму, а затем кликни Создать клуб. Администратор увидит твою заявку и создаст чаты в Max, Telegram,
+            клуб появится на главной странице, тебе придет уведомление на почту о том, что клуб был создан.
+          </p>
+
+          <BaseButton
+            class="modal-action"
+            variant="primary"
+            full-width
+            testId="club-form-instruction-continue-button"
+            @click="close"
+          >
+            Понятно, перейти к созданию
+          </BaseButton>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
-.instruction {
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(26, 28, 43, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
   position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
   background: var(--color-surface);
   border-radius: 32px;
-  padding: 40px 36px;
-  overflow: hidden;
+  padding: 32px 36px 36px;
+  box-shadow: var(--shadow-lg);
 }
 
-.instruction-figures {
+.modal-close {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
 }
 
-.figure {
-  position: absolute;
+.modal-close:hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
 }
 
-.figure--circle {
-  top: -28px;
-  right: -28px;
+.modal-art {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: -32px -36px 20px;
+  height: 150px;
+  background:
+    radial-gradient(120% 160% at 50% 0%, rgba(160, 236, 6, 0.16) 0%, rgba(160, 236, 6, 0) 55%),
+    radial-gradient(90% 140% at 88% 100%, rgba(59, 62, 255, 0.08) 0%, rgba(59, 62, 255, 0) 60%);
 }
 
-.figure--spark {
-  top: 88px;
-  left: 24px;
-  opacity: 0.9;
+.modal-art-svg {
+  width: 280px;
+  height: auto;
 }
 
-.figure--blob {
-  bottom: 24px;
-  right: 28px;
-}
-
-.instruction-title {
+.modal-title {
   font-family: var(--font-heading);
   font-size: 26px;
   font-weight: 500;
-  line-height: 1.1;
+  line-height: 1.15;
   color: var(--color-text);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.instruction-text {
+.modal-text {
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.65;
   color: var(--color-text-secondary);
-  margin: 0 0 16px;
-  max-width: 380px;
+  margin: 0 0 14px;
 }
 
-.instruction-text:last-child {
-  margin-bottom: 0;
+.modal-text:last-of-type {
+  margin-bottom: 24px;
 }
 
-.instruction-text strong {
+.modal-text strong {
   color: var(--color-text);
   font-weight: 600;
 }
 
+.modal-action {
+  margin-top: 4px;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.modal-enter-active .modal,
+.modal-leave-active .modal {
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal {
+  transform: translateY(16px) scale(0.98);
+}
+
+.modal-leave-to .modal {
+  transform: translateY(8px) scale(0.98);
+}
+
 @media (max-width: 600px) {
-  .instruction {
-    padding: 28px 24px;
+  .modal {
+    padding: 24px 24px 28px;
+    border-radius: 24px;
   }
 
-  .figure--blob {
-    display: none;
+  .modal-art {
+    height: 116px;
+    margin: -24px -24px 16px;
+  }
+
+  .modal-art-svg {
+    width: 224px;
+  }
+
+  .modal-title {
+    font-size: 22px;
+  }
+
+  .modal-text {
+    font-size: 14px;
   }
 }
 </style>

@@ -1,33 +1,33 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import ClubForm from '@/components/ClubForm/ClubForm.vue'
 import ClubFormInstruction from '@/components/ClubFormInstruction/ClubFormInstruction.vue'
+import { useClubsStore } from '@/stores/clubs'
+
+const clubsStore = useClubsStore()
+const showInstruction = ref(false)
+
+onMounted(async () => {
+  try {
+    const count = await clubsStore.ownedClubsCount()
+    showInstruction.value = count === 0
+  } catch {
+    showInstruction.value = false
+  }
+})
 </script>
 
 <template>
   <div class="create-club" data-testid="create-club-page">
-    <div class="create-club-form">
-      <ClubForm />
-    </div>
-    <ClubFormInstruction />
+    <ClubForm />
+    <ClubFormInstruction :open="showInstruction" @close="showInstruction = false" />
   </div>
 </template>
 
 <style scoped>
 .create-club {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
   width: 100%;
-}
-
-.create-club-form {
-  min-width: 0;
-}
-
-@media (max-width: 900px) {
-  .create-club {
-    grid-template-columns: 1fr;
-  }
+  max-width: 640px;
+  margin: 0 auto;
 }
 </style>

@@ -1,5 +1,4 @@
 from django.contrib.humanize.templatetags.humanize import naturaltime
-from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db.models import Count, QuerySet
 from django.http import HttpRequest
@@ -101,9 +100,6 @@ class ClubRequestAdmin(ModelAdmin):
         previous_status = None
         if change and obj.pk:
             previous_status = ClubRequest.objects.filter(pk=obj.pk).values_list("status", flat=True).first()
-
-        if obj.status == ClubRequest.Status.APPROVED and not obj.telegram_chat_link:
-            raise ValidationError(_("Telegram chat link is required to approve the request."))
 
         obj.save()
 
