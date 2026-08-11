@@ -6,7 +6,7 @@ from django.contrib.postgres.search import (
 )
 from django.db.models import QuerySet
 
-from clubs.models import BookReview, Club
+from clubs.models import BookReview, Category, Club
 
 
 User = get_user_model()
@@ -23,6 +23,7 @@ class ReviewFilter(django_filters.FilterSet):
 class ClubFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method="filter_search")
     membership = django_filters.CharFilter(method="filter_by_membership")
+    category = django_filters.NumberFilter(method="filter_by_category")
 
     class Meta:
         model = Club
@@ -46,3 +47,12 @@ class ClubFilter(django_filters.FilterSet):
         if value == "owner":
             return queryset.filter(owner=user)
         return queryset
+
+    def filter_by_category(self, queryset: QuerySet, name: str, value: int) -> QuerySet:
+        try:
+            category = Category.objects.get(pk=value)
+        except Category.DoesNotExist:
+            return queryset.none()
+
+        category_ids = [category.pk, *category.children.values_list("pk", flat=True)]
+        return queryset.filter(category_id__in=category_ids)

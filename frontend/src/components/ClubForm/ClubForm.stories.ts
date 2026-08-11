@@ -53,6 +53,8 @@ export const Edit: Story = {
         bookAuthors: 'Test Author',
         publicationYear: 2020,
         description: 'Test description',
+        category: 11,
+        categoryName: 'Программирование',
         telegramChatLink: 'https://t.me/test',
         maxChatLink: '',
         owner: 1,

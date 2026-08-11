@@ -6,7 +6,7 @@ import { useClubsStore } from '@/stores/clubs'
 import { pluralize, reviewLabel } from '@/utils/plural'
 import ClubReviews from '@/components/ClubReviews/ClubReviews.vue'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
-import type { Club } from '@/api/data-contracts'
+import type { Club } from '@/api/Api'
 
 const route = useRoute()
 const router = useRouter()

@@ -2,14 +2,22 @@ import { defineStore } from 'pinia'
 import { api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { showToast } from '@/stores/toast'
-import type { Club, ClubsListParams } from '@/api/data-contracts'
-import type { BookClubRequestRequest, PatchedClubRequest } from '@/api/Api'
+import type { BookClubRequestRequest, Club, PatchedClubRequest } from '@/api/Api'
+
+interface ClubsListParams {
+  category?: number
+  membership?: string
+  page?: number
+  page_size?: number
+  search?: string
+}
 
 interface ClubsState {
   clubs: Club[]
   isLoading: boolean
-  activeFilter: 'member' | 'owner' | 'all' | null
+  activeFilter: 'member' | 'all' | null
   activeSearch: string | null
+  activeCategory: number | null
   pagination: {
     count: number
     next: string | null
@@ -25,6 +33,7 @@ export const useClubsStore = defineStore('clubs', {
     isLoading: false,
     activeFilter: null,
     activeSearch: null,
+    activeCategory: null,
     pagination: {
       count: 0,
       next: null,
@@ -62,12 +71,16 @@ export const useClubsStore = defineStore('clubs', {
       if (this.activeFilter && this.activeFilter !== 'all') {
         return this.filterByMembership(this.activeFilter, page, pageSize)
       }
+      if (this.activeCategory) {
+        return this.filterByCategory(this.activeCategory, page, pageSize)
+      }
       return this.fetchClubs(page, pageSize)
     },
 
     async fetchClubs(page: number = 1, pageSize: number = 10) {
       this.activeFilter = 'all'
       this.activeSearch = null
+      this.activeCategory = null
       await this._fetchClubsWithParams(
         { page, page_size: pageSize },
         'Не удалось загрузить список клубов',
@@ -77,6 +90,7 @@ export const useClubsStore = defineStore('clubs', {
     async searchClubs(query: string, page: number = 1, pageSize: number = 10) {
       this.activeSearch = query
       this.activeFilter = null
+      this.activeCategory = null
       await this._fetchClubsWithParams(
         { search: query, page, page_size: pageSize },
         'Ошибка при поиске клубов',
@@ -84,15 +98,26 @@ export const useClubsStore = defineStore('clubs', {
     },
 
     async filterByMembership(
-      type: 'member' | 'owner' | 'all',
+      type: 'member' | 'all',
       page: number = 1,
       pageSize: number = 10,
     ) {
       this.activeFilter = type
       this.activeSearch = null
       const params: ClubsListParams = { page, page_size: pageSize }
+      if (this.activeCategory) params.category = this.activeCategory
       if (type !== 'all') params.membership = type
       await this._fetchClubsWithParams(params, 'Ошибка при фильтрации клубов')
+    },
+
+    async filterByCategory(categoryId: number, page: number = 1, pageSize: number = 10) {
+      this.activeCategory = categoryId
+      this.activeSearch = null
+      this.activeFilter = 'all'
+      await this._fetchClubsWithParams(
+        { category: categoryId, page, page_size: pageSize },
+        'Ошибка при фильтрации по категории',
+      )
     },
 
     async nextPage() {

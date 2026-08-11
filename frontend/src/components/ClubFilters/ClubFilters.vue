@@ -1,34 +1,43 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
+import { useCategoriesStore } from '@/stores/categories'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const clubsStore = useClubsStore()
+const categoriesStore = useCategoriesStore()
 
 const searchQuery = ref('')
-const activeFilter = ref<'all' | 'member' | 'owner'>('all')
+const activeFilter = ref<'all' | 'member'>('all')
+const activeCategoryId = ref<number | null>(null)
+const activeSubcategoryId = ref<number | null>(null)
 const searchInput = ref<HTMLInputElement | null>(null)
 const mounted = ref(false)
 const showFilterDropdown = ref(false)
 const filterDropdownRef = ref<HTMLDivElement | null>(null)
 
-const filters = ['all', 'owner', 'member'] as const
+const filters = ['all', 'member'] as const
 
 const filterLabels: Record<string, string> = {
   all: 'Все клубы',
-  owner: 'Мои клубы',
   member: 'Участвую',
 }
+
+const activeSubcategories = computed(() => {
+  if (activeCategoryId.value === null) return []
+  return categoriesStore.childrenOf(activeCategoryId.value)
+})
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
   mounted.value = true
   document.addEventListener('click', handleOutsideClick)
+  categoriesStore.fetchCategories()
 })
 
 const doSearch = (query: string) => {
@@ -55,8 +64,8 @@ const handleSearchKeydown = (e: KeyboardEvent) => {
   }
 }
 
-const applyFilter = (filter: 'all' | 'member' | 'owner') => {
-  if (!authStore.isAuthenticated && filter !== 'all') {
+const applyFilter = (filter: 'all' | 'member') => {
+  if (!authStore.isAuthenticated && filter === 'member') {
     router.push('/signin')
     return
   }
@@ -69,6 +78,30 @@ const applyFilter = (filter: 'all' | 'member' | 'owner') => {
   showFilterDropdown.value = false
 }
 
+const selectCategory = (id: number) => {
+  if (activeCategoryId.value === id && activeSubcategoryId.value === null) {
+    activeCategoryId.value = null
+    activeSubcategoryId.value = null
+    clubsStore.fetchClubs()
+    return
+  }
+  activeCategoryId.value = id
+  activeSubcategoryId.value = null
+  clubsStore.filterByCategory(id)
+}
+
+const selectSubcategory = (id: number) => {
+  if (activeSubcategoryId.value === id) {
+    activeSubcategoryId.value = null
+    if (activeCategoryId.value !== null) {
+      clubsStore.filterByCategory(activeCategoryId.value)
+    }
+    return
+  }
+  activeSubcategoryId.value = id
+  clubsStore.filterByCategory(id)
+}
+
 const toggleFilterDropdown = () => {
   showFilterDropdown.value = !showFilterDropdown.value
 }
@@ -79,7 +112,7 @@ const handleOutsideClick = (e: MouseEvent) => {
   }
 }
 
-const filterLabel = (f: 'all' | 'owner' | 'member') => filterLabels[f]
+const filterLabel = (f: 'all' | 'member') => filterLabels[f]
 </script>
 
 <template>
@@ -115,7 +148,7 @@ const filterLabel = (f: 'all' | 'owner' | 'member') => filterLabels[f]
           :key="f"
           @click="applyFilter(f)"
           :class="{ active: activeFilter === f }"
-          class="filter-tab"
+          class="filter-tab filter-tab--membership"
         >
           {{ filterLabel(f) }}
         </button>
@@ -126,11 +159,35 @@ const filterLabel = (f: 'all' | 'owner' | 'member') => filterLabels[f]
           :key="f"
           @click="applyFilter(f)"
           :class="{ active: activeFilter === f, 'active-pop': activeFilter === f && mounted }"
-          class="filter-tab"
+          class="filter-tab filter-tab--membership"
         >
           {{ filterLabel(f) }}
         </button>
       </div>
+    </div>
+
+    <div class="category-filter">
+      <button
+        v-for="c in categoriesStore.topLevelCategories"
+        :key="c.id"
+        @click="selectCategory(c.id)"
+        :class="{ active: activeCategoryId === c.id }"
+        class="filter-tab category-tab"
+      >
+        {{ c.name }}
+      </button>
+    </div>
+
+    <div v-if="activeSubcategories.length" class="subcategory-filter">
+      <button
+        v-for="s in activeSubcategories"
+        :key="s.id"
+        @click="selectSubcategory(s.id)"
+        :class="{ active: activeSubcategoryId === s.id }"
+        class="filter-tab subcategory-tab"
+      >
+        {{ s.name }}
+      </button>
     </div>
   </div>
 </template>
@@ -231,6 +288,37 @@ const filterLabel = (f: 'all' | 'owner' | 'member') => filterLabels[f]
   background: var(--color-brand-soft);
 }
 
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.category-tab,
+.subcategory-tab {
+  font-size: 16px;
+  padding: 8px 18px;
+}
+
+.subcategory-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.subcategory-tab {
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+}
+
+.subcategory-tab.active {
+  background: var(--color-accent);
+  color: #0B0F19;
+  border-color: var(--color-accent);
+}
+
 @keyframes active-pop {
   0% { transform: scale(1); }
   40% { transform: scale(1.06); }
@@ -320,7 +408,7 @@ const filterLabel = (f: 'all' | 'owner' | 'member') => filterLabels[f]
     display: none;
   }
 
-  .filter-tab {
+  .filter-tab--membership {
     width: 100%;
     padding: 12px 16px;
     border-radius: 0;
@@ -333,20 +421,20 @@ const filterLabel = (f: 'all' | 'owner' | 'member') => filterLabels[f]
     transition: background 0.15s, color 0.15s;
   }
 
-  .filter-tab:last-child {
+  .filter-tab--membership:last-child {
     border-bottom: none;
   }
 
-  .filter-tab.active {
+  .filter-tab--membership.active {
     background: var(--color-brand-soft);
     color: var(--color-brand);
   }
 
-  .filter-tab:not(.active):hover {
+  .filter-tab--membership:not(.active):hover {
     background: var(--color-brand-soft);
   }
 
-  .filter-tab.active-pop {
+  .filter-tab--membership.active-pop {
     animation: none;
   }
 }

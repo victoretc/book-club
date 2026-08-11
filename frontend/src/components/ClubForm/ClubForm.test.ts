@@ -3,6 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useClubsStore } from '@/stores/clubs'
+import { useCategoriesStore } from '@/stores/categories'
 import { api } from '@/api'
 import ClubForm from './ClubForm.vue'
 
@@ -64,6 +65,16 @@ const mockClub = {
   description: 'Test description',
 }
 
+const mockCategories = [
+  { id: 1, name: 'IT', slug: 'it', parent: null },
+  { id: 11, name: 'Программирование', slug: 'programming', parent: 1 },
+]
+
+function seedCategories() {
+  const categoriesStore = useCategoriesStore()
+  categoriesStore.$patch({ categories: mockCategories })
+}
+
 describe('ClubForm', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -86,18 +97,22 @@ describe('ClubForm', () => {
   })
 
   it('renders all form fields', () => {
+    seedCategories()
     const wrapper = createWrapper()
     expect(wrapper.find('#bookTitle').exists()).toBe(true)
     expect(wrapper.find('#bookAuthors').exists()).toBe(true)
     expect(wrapper.find('#publicationYear').exists()).toBe(true)
     expect(wrapper.find('#description').exists()).toBe(true)
+    expect(wrapper.find('#category').exists()).toBe(true)
   })
 
   it('submits create form, creates club request and navigates to clubs', async () => {
+    seedCategories()
     const createRequestSpy = vi.spyOn(api.api, 'clubsClubRequestsCreate').mockResolvedValue({ data: { id: 1 } } as any)
 
     const wrapper = createWrapper()
 
+    await wrapper.find('#category').setValue(1)
     await wrapper.find('form').trigger('submit')
     await flushPromises()
     await nextTick()
@@ -107,13 +122,15 @@ describe('ClubForm', () => {
       bookAuthors: 'New Author',
       publicationYear: 2024,
       description: 'New description',
+      category: 1,
     })
     expect(push).toHaveBeenCalledWith({ name: 'clubs' })
   })
 
-  it('submits edit form and navigates to clubs', async () => {
+  it('submits edit form with prefilled category and navigates to clubs', async () => {
+    seedCategories()
     const clubsStore = useClubsStore()
-    vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue(mockClub as any)
+    vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue({ ...mockClub, category: 11 } as any)
     const partialUpdateSpy = vi.spyOn(api.api, 'clubsPartialUpdate').mockResolvedValue({ data: { id: 1 } } as any)
 
     const wrapper = createWrapper({ clubId: 1 })

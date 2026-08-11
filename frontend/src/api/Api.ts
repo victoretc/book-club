@@ -34,6 +34,8 @@ export interface BookClubRequest {
   publicationYear: number;
   /** Book Description */
   description: string;
+  category?: number | null;
+  categoryName: string | null;
   status: StatusEnum;
   requester: number;
   /**
@@ -80,6 +82,7 @@ export interface BookClubRequestRequest {
    * @minLength 1
    */
   description: string;
+  category?: number | null;
 }
 
 export interface BookReview {
@@ -129,6 +132,15 @@ export interface BookReviewRequest {
   readPages: number;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  /** @pattern ^[-a-zA-Z0-9_]+$ */
+  slug: string;
+  /** Parent Category */
+  parent: number | null;
+}
+
 export interface Club {
   id: number;
   /** @maxLength 255 */
@@ -142,6 +154,8 @@ export interface Club {
   publicationYear: number;
   /** Book Description */
   description: string;
+  category?: number | null;
+  categoryName: string | null;
   /**
    * Link on Telegram chat
    * @format uri
@@ -190,6 +204,7 @@ export interface ClubRequest {
    * @minLength 1
    */
   description: string;
+  category?: number | null;
   /**
    * Link on Telegram chat
    * @format uri
@@ -277,6 +292,22 @@ export interface PaginatedBookReviewList {
   results: BookReview[];
 }
 
+export interface PaginatedCategoryList {
+  /** @example 123 */
+  count: number;
+  /**
+   * @format uri
+   * @example "http://api.example.org/accounts/?page=4"
+   */
+  next?: string | null;
+  /**
+   * @format uri
+   * @example "http://api.example.org/accounts/?page=2"
+   */
+  previous?: string | null;
+  results: Category[];
+}
+
 export interface PaginatedClubList {
   /** @example 123 */
   count: number;
@@ -333,6 +364,7 @@ export interface PatchedClubRequest {
    * @minLength 1
    */
   description?: string;
+  category?: number | null;
   /**
    * Link on Telegram chat
    * @format uri
@@ -885,6 +917,7 @@ export class Api<
      */
     clubsList: (
       query?: {
+        category?: number;
         membership?: string;
         /** A page number within the paginated result set. */
         page?: number;
@@ -1026,6 +1059,49 @@ export class Api<
         path: `/api/v1/clubs/${id}/members/me/`,
         method: "DELETE",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags clubs
+     * @name ClubsCategoriesList
+     * @request GET:/api/v1/clubs/categories/
+     * @secure
+     */
+    clubsCategoriesList: (
+      query?: {
+        /** A page number within the paginated result set. */
+        page?: number;
+        /** Number of results to return per page. */
+        page_size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedCategoryList, any>({
+        path: `/api/v1/clubs/categories/`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags clubs
+     * @name ClubsCategoriesRetrieve
+     * @request GET:/api/v1/clubs/categories/{id}/
+     * @secure
+     */
+    clubsCategoriesRetrieve: (id: number, params: RequestParams = {}) =>
+      this.request<Category, any>({
+        path: `/api/v1/clubs/categories/${id}/`,
+        method: "GET",
+        secure: true,
+        format: "json",
         ...params,
       }),
 

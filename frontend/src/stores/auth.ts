@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api, setTokens, clearTokens } from '@/api'
-import type { TokenRefresh, PatchedUser, User } from '@/api/data-contracts'
+import type { PatchedUserRequest, TokenRefresh, User } from '@/api/Api'
 
 const AUTH_STORAGE_KEY = 'book_club_auth'
 
@@ -77,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const updateUser = async (userData: PatchedUser) => {
+  const updateUser = async (userData: PatchedUserRequest) => {
     if (!accessToken.value) {
       throw new Error('No access token')
     }

@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useForm, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 import { useClubsStore } from '@/stores/clubs'
+import { useCategoriesStore } from '@/stores/categories'
 import { showToast } from '@/stores/toast'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
-import type { Club } from '@/api/data-contracts'
+import type { Club } from '@/api/Api'
 import type { BookClubRequestRequest } from '@/api/Api'
 
 interface Props {
@@ -22,8 +23,18 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const clubsStore = useClubsStore()
+const categoriesStore = useCategoriesStore()
 const isLoading = ref(false)
 const errorMsg = ref('')
+
+const parentCategoryId = ref<number | ''>('')
+const subcategoryId = ref<number | ''>('')
+const categoryError = ref('')
+
+const subcategories = computed(() => {
+  if (parentCategoryId.value === '') return []
+  return categoriesStore.childrenOf(parentCategoryId.value)
+})
 
 const validationSchema = yup.object({
   bookTitle: yup.string().required('Название книги обязательно'),
@@ -36,11 +47,29 @@ const { handleSubmit, setValues } = useForm({
   validationSchema,
 })
 
+function resolveCategory(): number | '' {
+  const value = subcategoryId.value !== '' ? subcategoryId.value : parentCategoryId.value
+  categoryError.value = value === '' ? 'Выберите категорию' : ''
+  return value
+}
+
+function onParentCategoryChange() {
+  subcategoryId.value = ''
+  categoryError.value = ''
+}
+
+function onSubcategoryChange() {
+  categoryError.value = ''
+}
+
 async function loadClub() {
   if (!props.clubId) return
   isLoading.value = true
   try {
     const club = await clubsStore.fetchClub(props.clubId)
+    const category = categoriesStore.categoryById(club.category)
+    parentCategoryId.value = category?.parent ?? club.category ?? ''
+    subcategoryId.value = category?.parent != null ? club.category ?? '' : ''
     setValues({
       bookTitle: club.bookTitle,
       bookAuthors: club.bookAuthors,
@@ -54,17 +83,22 @@ async function loadClub() {
   }
 }
 
-onMounted(loadClub)
+onMounted(() => {
+  loadClub()
+  categoriesStore.fetchCategories()
+})
 
 const onSubmit = handleSubmit(async (values) => {
+  const category = resolveCategory()
+  if (category === '') return
   isLoading.value = true
   errorMsg.value = ''
   try {
     if (props.clubId) {
-      await clubsStore.updateClub(props.clubId, values as Partial<Club>)
+      await clubsStore.updateClub(props.clubId, { ...(values as Partial<Club>), category })
       showToast('Клуб успешно обновлен', 'success')
     } else {
-      await clubsStore.createClubRequest(values as BookClubRequestRequest)
+      await clubsStore.createClubRequest({ ...(values as BookClubRequestRequest), category })
       showToast('Заявка отправлена. Администратор рассмотрит её в ближайшее время.', 'success')
     }
     emit('submit')
@@ -138,6 +172,41 @@ const onSubmit = handleSubmit(async (values) => {
       <ErrorMessage name="description" class="field-error" />
     </div>
 
+    <div class="field">
+      <label for="category">Категория *</label>
+      <select
+        id="category"
+        v-model="parentCategoryId"
+        class="input select"
+        :disabled="isLoading"
+        data-testid="club-form-category-select"
+        @change="onParentCategoryChange"
+      >
+        <option value="">Выберите категорию</option>
+        <option v-for="c in categoriesStore.topLevelCategories" :key="c.id" :value="c.id">
+          {{ c.name }}
+        </option>
+      </select>
+      <span v-if="categoryError" class="field-error" data-testid="club-form-category-error">{{ categoryError }}</span>
+    </div>
+
+    <div v-if="subcategories.length" class="field">
+      <label for="subcategory">Подкатегория</label>
+      <select
+        id="subcategory"
+        v-model="subcategoryId"
+        class="input select"
+        :disabled="isLoading"
+        data-testid="club-form-subcategory-select"
+        @change="onSubcategoryChange"
+      >
+        <option value="">Не выбрана</option>
+        <option v-for="s in subcategories" :key="s.id" :value="s.id">
+          {{ s.name }}
+        </option>
+      </select>
+    </div>
+
     <div v-if="errorMsg" class="error-msg" data-testid="club-form-error">{{ errorMsg }}</div>
 
     <div class="form-actions">
@@ -182,7 +251,8 @@ const onSubmit = handleSubmit(async (values) => {
 }
 
 .input,
-.textarea {
+.textarea,
+.select {
   width: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-stroke-subtle);
@@ -192,6 +262,22 @@ const onSubmit = handleSubmit(async (values) => {
   font-size: 16px;
   color: var(--color-text);
   transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.select {
+  height: 48px;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239AA0AC' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .input {
@@ -209,7 +295,8 @@ const onSubmit = handleSubmit(async (values) => {
 }
 
 .input:focus,
-.textarea:focus {
+.textarea:focus,
+.select:focus {
   outline: none;
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px var(--color-brand-ring);

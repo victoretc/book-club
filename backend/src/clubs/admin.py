@@ -6,7 +6,27 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 
 from app.admin import ModelAdmin, admin
-from clubs.models import Club, ClubRequest
+from clubs.models import Category, Club, ClubRequest
+
+
+@admin.register(Category)
+class CategoryAdmin(ModelAdmin):
+    list_display = (
+        "name",
+        "parent",
+        "position",
+        "get_created",
+    )
+
+    list_filter = ("parent",)
+    search_fields = ("name", "slug")
+    prepopulated_fields = {"slug": ("name",)}
+    list_per_page = 25
+
+    @admin.display(description=_("Created"), ordering="created")
+    def get_created(self, obj: Category) -> str | None:
+        if obj.created:
+            return naturaltime(obj.created)
 
 
 @admin.register(Club)
@@ -115,6 +135,7 @@ class ClubRequestAdmin(ModelAdmin):
                 "book_authors": request.book_authors,
                 "publication_year": request.publication_year,
                 "description": request.description,
+                "category": request.category,
                 "telegram_chat_link": request.telegram_chat_link,
                 "max_chat_link": request.max_chat_link,
                 "owner": request.requester,

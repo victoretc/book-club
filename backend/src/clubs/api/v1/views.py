@@ -9,11 +9,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from clubs.api.v1.filters import ClubFilter, ReviewFilter
-from clubs.api.v1.serializers import BookClubRequestSerializer, BookReviewSerializer, ClubSerializer
-from clubs.models import BookReview, Club, ClubRequest
+from clubs.api.v1.serializers import (
+    BookClubRequestSerializer,
+    BookReviewSerializer,
+    CategorySerializer,
+    ClubSerializer,
+)
+from clubs.models import BookReview, Category, Club, ClubRequest
 
 
 User = get_user_model()
@@ -51,7 +56,7 @@ class ClubViewSet(ModelViewSet):
 
     def get_queryset(self) -> QuerySet[Club]:
         return (
-            Club.objects.select_related("owner")
+            Club.objects.select_related("owner", "category")
             .prefetch_related("members")
             .prefetch_related(Prefetch("reviews", queryset=BookReview.objects.select_related("user")))
         )
@@ -83,6 +88,14 @@ class ClubViewSet(ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response({"detail": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class CategoryViewSet(ReadOnlyModelViewSet):
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self) -> QuerySet[Category]:
+        return Category.objects.all()
 
 
 class ReviewViewSet(ModelViewSet):
@@ -121,7 +134,7 @@ class ClubRequestViewSet(ModelViewSet):
         return [permission() for permission in [permissions.IsAdminUser]]
 
     def get_queryset(self) -> QuerySet[ClubRequest]:
-        return ClubRequest.objects.select_related("requester")
+        return ClubRequest.objects.select_related("requester", "category")
 
     def perform_create(self, serializer: BaseSerializer) -> None:
         serializer.save(requester=self.request.user)

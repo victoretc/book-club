@@ -3,6 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
+import { useCategoriesStore } from '@/stores/categories'
 import ClubFilters from './ClubFilters.vue'
 
 const push = vi.fn()
@@ -39,7 +40,7 @@ describe('ClubFilters', () => {
     const wrapper = createWrapper()
     expect(wrapper.text()).toContain('Все клубы')
     expect(wrapper.text()).toContain('Участвую')
-    expect(wrapper.text()).toContain('Мои клубы')
+    expect(wrapper.text()).not.toContain('Мои клубы')
   })
 
   it('updates search query on input', async () => {
@@ -51,19 +52,10 @@ describe('ClubFilters', () => {
 
   it('redirects to signin when unauthenticated user clicks member filter', async () => {
     const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab')
+    const buttons = wrapper.findAll('.filter-tab--membership')
     const memberBtn = buttons.find((b) => b.text() === 'Участвую')
     expect(memberBtn).toBeDefined()
     await memberBtn!.trigger('click')
-    expect(push).toHaveBeenCalledWith('/signin')
-  })
-
-  it('redirects to signin when unauthenticated user clicks my clubs filter', async () => {
-    const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab')
-    const myClubsBtn = buttons.find((b) => b.text() === 'Мои клубы')
-    expect(myClubsBtn).toBeDefined()
-    await myClubsBtn!.trigger('click')
     expect(push).toHaveBeenCalledWith('/signin')
   })
 
@@ -74,7 +66,7 @@ describe('ClubFilters', () => {
     vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
 
     const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab')
+    const buttons = wrapper.findAll('.filter-tab--membership')
     const memberBtn = buttons.find((b) => b.text() === 'Участвую')
     await memberBtn!.trigger('click')
 
@@ -88,7 +80,7 @@ describe('ClubFilters', () => {
     vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
 
     const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab')
+    const buttons = wrapper.findAll('.filter-tab--membership')
     const memberBtn = buttons.find((b) => b.text() === 'Участвую')
     await memberBtn!.trigger('click')
 
@@ -105,5 +97,33 @@ describe('ClubFilters', () => {
     await wrapper.find('.search-btn').trigger('click')
 
     expect(clubsStore.searchClubs).toHaveBeenCalledWith('fantasy')
+  })
+
+  it('renders top-level category pills and filters by category and subcategory', async () => {
+    const categoriesStore = useCategoriesStore()
+    categoriesStore.$patch({
+      categories: [
+        { id: 1, name: 'IT', slug: 'it', parent: null },
+        { id: 2, name: 'Бизнес', slug: 'business', parent: null },
+        { id: 11, name: 'Программирование', slug: 'programming', parent: 1 },
+      ],
+    })
+    const clubsStore = useClubsStore()
+    vi.spyOn(clubsStore, 'filterByCategory').mockResolvedValue(undefined)
+
+    const wrapper = createWrapper()
+    const itTab = wrapper.findAll('.category-tab').find((b) => b.text() === 'IT')
+    expect(itTab).toBeDefined()
+    await itTab!.trigger('click')
+
+    expect(clubsStore.filterByCategory).toHaveBeenCalledWith(1)
+
+    const programmingChip = wrapper
+      .findAll('.subcategory-tab')
+      .find((b) => b.text() === 'Программирование')
+    expect(programmingChip).toBeDefined()
+    await programmingChip!.trigger('click')
+
+    expect(clubsStore.filterByCategory).toHaveBeenLastCalledWith(11)
   })
 })

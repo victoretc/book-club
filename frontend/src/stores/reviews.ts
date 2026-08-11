@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { api } from '@/api'
-import type { BookReview, ClubsReviewsListParams, PatchedBookReview } from '@/api/data-contracts'
+import type { BookReview, PatchedBookReviewRequest } from '@/api/Api'
+
+interface ClubsReviewsListParams {
+  club?: number
+  page?: number
+  page_size?: number
+}
 
 interface ReviewsState {
   reviews: BookReview[]
@@ -104,7 +110,7 @@ export const useReviewsStore = defineStore('reviews', {
       try {
         const response = await api.api.clubsReviewsPartialUpdate(
           reviewId,
-          reviewData as unknown as PatchedBookReview,
+          reviewData as unknown as PatchedBookReviewRequest,
         )
 
         Object.keys(this.clubReviews).forEach((clubId) => {

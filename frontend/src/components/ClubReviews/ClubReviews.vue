@@ -3,7 +3,7 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import { showToast } from '@/stores/toast'
-import type { BookReview, Member } from '@/api/data-contracts'
+import type { BookReview, Member } from '@/api/Api'
 import { getStars, formatDate } from '@/utils/format'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 

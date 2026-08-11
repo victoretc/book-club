@@ -53,7 +53,7 @@ tasks:
   loaddata: 
     dir: src 
     cmds:
-      - uv run python manage.py loaddata users.json clubs.json
+      - uv run python manage.py loaddata users.json clubs.json categories.json
 
   all:
     cmds:
