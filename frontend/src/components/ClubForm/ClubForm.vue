@@ -236,6 +236,17 @@ const onSubmit = handleSubmit(async (values) => {
   cursor: not-allowed;
 }
 
+[data-testid="club-form-publication-year-input"]::-webkit-inner-spin-button,
+[data-testid="club-form-publication-year-input"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+[data-testid="club-form-publication-year-input"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .field-error {
   color: var(--color-error);
   font-size: 14px;
