@@ -10,6 +10,78 @@
  * ---------------------------------------------------------------
  */
 
+/**
+ * * `pending` - Pending
+ * * `approved` - Approved
+ * * `declined` - Declined
+ */
+export enum StatusEnum {
+  Pending = "pending",
+  Approved = "approved",
+  Declined = "declined",
+}
+
+export interface BookClubRequest {
+  id: number;
+  /** @maxLength 255 */
+  bookTitle: string;
+  /** @maxLength 255 */
+  bookAuthors: string;
+  /**
+   * @min -2147483648
+   * @max 2147483647
+   */
+  publicationYear: number;
+  /** Book Description */
+  description: string;
+  status: StatusEnum;
+  requester: number;
+  /**
+   * Link on Telegram chat
+   * @format uri
+   */
+  telegramChatLink: string;
+  /**
+   * Link on Max chat
+   * @format uri
+   */
+  maxChatLink: string;
+  adminComment: string;
+  /**
+   * Дата создания
+   * @format date-time
+   */
+  created: string;
+  /**
+   * Дата изменения
+   * @format date-time
+   */
+  modified: string | null;
+}
+
+export interface BookClubRequestRequest {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  bookTitle: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  bookAuthors: string;
+  /**
+   * @min -2147483648
+   * @max 2147483647
+   */
+  publicationYear: number;
+  /**
+   * Book Description
+   * @minLength 1
+   */
+  description: string;
+}
+
 export interface BookReview {
   id: number;
   club: number;
@@ -38,6 +110,25 @@ export interface BookReview {
   modified: string | null;
 }
 
+export interface BookReviewRequest {
+  club: number;
+  /**
+   * Book Review
+   * @minLength 1
+   */
+  review: string;
+  /**
+   * @min 1
+   * @max 5
+   */
+  assessment: number;
+  /**
+   * @min -2147483648
+   * @max 2147483647
+   */
+  readPages: number;
+}
+
 export interface Club {
   id: number;
   /** @maxLength 255 */
@@ -57,6 +148,12 @@ export interface Club {
    * @maxLength 200
    */
   telegramChatLink: string;
+  /**
+   * Link on Max chat
+   * @format uri
+   * @maxLength 200
+   */
+  maxChatLink?: string;
   owner: number;
   members: Member[];
   reviews: BookReview[];
@@ -70,6 +167,42 @@ export interface Club {
    * @format date-time
    */
   modified: string | null;
+}
+
+export interface ClubRequest {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  bookTitle: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  bookAuthors: string;
+  /**
+   * @min -2147483648
+   * @max 2147483647
+   */
+  publicationYear: number;
+  /**
+   * Book Description
+   * @minLength 1
+   */
+  description: string;
+  /**
+   * Link on Telegram chat
+   * @format uri
+   * @minLength 1
+   * @maxLength 200
+   */
+  telegramChatLink: string;
+  /**
+   * Link on Max chat
+   * @format uri
+   * @maxLength 200
+   */
+  maxChatLink?: string;
 }
 
 export interface Member {
@@ -90,6 +223,42 @@ export interface Member {
    * @maxLength 254
    */
   email?: string;
+}
+
+export interface MemberRequest {
+  /**
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @minLength 1
+   * @maxLength 150
+   * @pattern ^[\w.@+-]+$
+   */
+  username: string;
+  /** @maxLength 150 */
+  firstName?: string;
+  /** @maxLength 150 */
+  lastName?: string;
+  /**
+   * Email address
+   * @format email
+   * @maxLength 254
+   */
+  email?: string;
+}
+
+export interface PaginatedBookClubRequestList {
+  /** @example 123 */
+  count: number;
+  /**
+   * @format uri
+   * @example "http://api.example.org/accounts/?page=4"
+   */
+  next?: string | null;
+  /**
+   * @format uri
+   * @example "http://api.example.org/accounts/?page=2"
+   */
+  previous?: string | null;
+  results: BookClubRequest[];
 }
 
 export interface PaginatedBookReviewList {
@@ -124,11 +293,12 @@ export interface PaginatedClubList {
   results: Club[];
 }
 
-export interface PatchedBookReview {
-  id?: number;
+export interface PatchedBookReviewRequest {
   club?: number;
-  user?: User;
-  /** Book Review */
+  /**
+   * Book Review
+   * @minLength 1
+   */
   review?: string;
   /**
    * @min 1
@@ -140,56 +310,48 @@ export interface PatchedBookReview {
    * @max 2147483647
    */
   readPages?: number;
-  /**
-   * Дата создания
-   * @format date-time
-   */
-  created?: string;
-  /**
-   * Дата изменения
-   * @format date-time
-   */
-  modified?: string | null;
 }
 
-export interface PatchedClub {
-  id?: number;
-  /** @maxLength 255 */
+export interface PatchedClubRequest {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
   bookTitle?: string;
-  /** @maxLength 255 */
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
   bookAuthors?: string;
   /**
    * @min -2147483648
    * @max 2147483647
    */
   publicationYear?: number;
-  /** Book Description */
+  /**
+   * Book Description
+   * @minLength 1
+   */
   description?: string;
   /**
    * Link on Telegram chat
    * @format uri
+   * @minLength 1
    * @maxLength 200
    */
   telegramChatLink?: string;
-  owner?: number;
-  members?: Member[];
-  reviews?: BookReview[];
   /**
-   * Дата создания
-   * @format date-time
+   * Link on Max chat
+   * @format uri
+   * @maxLength 200
    */
-  created?: string;
-  /**
-   * Дата изменения
-   * @format date-time
-   */
-  modified?: string | null;
+  maxChatLink?: string;
 }
 
-export interface PatchedUser {
-  id?: number;
+export interface PatchedUserRequest {
   /**
    * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @minLength 1
    * @maxLength 150
    * @pattern ^[\w.@+-]+$
    */
@@ -204,25 +366,61 @@ export interface PatchedUser {
    * @maxLength 254
    */
   email?: string;
-  remoteAddr?: string;
 }
 
 export interface RequestCode {
-  /** @format email */
+  detail: string;
+}
+
+export interface RequestCodeRequest {
+  /**
+   * @format email
+   * @minLength 1
+   */
   email: string;
 }
 
-export interface TokenBlacklist {
+export interface RetrieveCodeRequest {
+  /**
+   * Email адрес, на который был отправлен код
+   * @format email
+   * @minLength 1
+   */
+  email: string;
+}
+
+export interface RetrieveCodeResponse {
+  /**
+   * 4-значный код подтверждения
+   * @maxLength 4
+   */
+  code: string;
+}
+
+export interface TokenBlacklistRequest {
+  /** @minLength 1 */
   refresh: string;
 }
 
 export interface TokenObtainPairWithProperMessage {
+  access: string;
+  refresh: string;
+}
+
+export interface TokenObtainPairWithProperMessageRequest {
+  /** @minLength 1 */
   username: string;
+  /** @minLength 1 */
   password: string;
 }
 
 export interface TokenRefresh {
   access: string;
+  refresh: string;
+}
+
+export interface TokenRefreshRequest {
+  /** @minLength 1 */
   refresh: string;
 }
 
@@ -247,8 +445,41 @@ export interface UserRegister {
   password: string;
 }
 
+export interface UserRegisterRequest {
+  /**
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @minLength 1
+   * @maxLength 150
+   * @pattern ^[\w.@+-]+$
+   */
+  username: string;
+  /**
+   * @minLength 1
+   * @maxLength 128
+   */
+  password: string;
+}
+
+export interface UserRequest {
+  /**
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @minLength 1
+   * @maxLength 150
+   * @pattern ^[\w.@+-]+$
+   */
+  username: string;
+}
+
 export interface VerifyCode {
-  /** @format email */
+  access: string;
+  refresh: string;
+}
+
+export interface VerifyCodeRequest {
+  /**
+   * @format email
+   * @minLength 1
+   */
   email: string;
   /**
    * @minLength 4
@@ -530,9 +761,31 @@ export class Api<
      * @request POST:/api/v1/auth/code/
      * @secure
      */
-    authCodeCreate: (data: RequestCode, params: RequestParams = {}) =>
+    authCodeCreate: (data: RequestCodeRequest, params: RequestParams = {}) =>
       this.request<RequestCode, any>({
         path: `/api/v1/auth/code/`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Возвращает последний неиспользованный код для указанного email. Работает только в DEBUG.
+     *
+     * @tags auth
+     * @name AuthCodeRetrieveCreate
+     * @request POST:/api/v1/auth/code/retrieve/
+     * @secure
+     */
+    authCodeRetrieveCreate: (
+      data: RetrieveCodeRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<RetrieveCodeResponse, any>({
+        path: `/api/v1/auth/code/retrieve/`,
         method: "POST",
         body: data,
         secure: true,
@@ -549,7 +802,10 @@ export class Api<
      * @request POST:/api/v1/auth/code/verify/
      * @secure
      */
-    authCodeVerifyCreate: (data: VerifyCode, params: RequestParams = {}) =>
+    authCodeVerifyCreate: (
+      data: VerifyCodeRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<VerifyCode, any>({
         path: `/api/v1/auth/code/verify/`,
         method: "POST",
@@ -567,13 +823,15 @@ export class Api<
      * @name AuthLogoutCreate
      * @request POST:/api/v1/auth/logout/
      */
-    authLogoutCreate: (data: TokenBlacklist, params: RequestParams = {}) =>
-      this.request<TokenBlacklist, any>({
+    authLogoutCreate: (
+      data: TokenBlacklistRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
         path: `/api/v1/auth/logout/`,
         method: "POST",
         body: data,
         type: ContentType.Json,
-        format: "json",
         ...params,
       }),
 
@@ -585,7 +843,7 @@ export class Api<
      * @request POST:/api/v1/auth/token/
      */
     authTokenCreate: (
-      data: TokenObtainPairWithProperMessage,
+      data: TokenObtainPairWithProperMessageRequest,
       params: RequestParams = {},
     ) =>
       this.request<TokenObtainPairWithProperMessage, any>({
@@ -604,7 +862,10 @@ export class Api<
      * @name AuthTokenRefreshCreate
      * @request POST:/api/v1/auth/token/refresh/
      */
-    authTokenRefreshCreate: (data: TokenRefresh, params: RequestParams = {}) =>
+    authTokenRefreshCreate: (
+      data: TokenRefreshRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<TokenRefresh, any>({
         path: `/api/v1/auth/token/refresh/`,
         method: "POST",
@@ -650,7 +911,7 @@ export class Api<
      * @request POST:/api/v1/clubs/
      * @secure
      */
-    clubsCreate: (data: Club, params: RequestParams = {}) =>
+    clubsCreate: (data: ClubRequest, params: RequestParams = {}) =>
       this.request<Club, any>({
         path: `/api/v1/clubs/`,
         method: "POST",
@@ -686,7 +947,7 @@ export class Api<
      * @request PUT:/api/v1/clubs/{id}/
      * @secure
      */
-    clubsUpdate: (id: number, data: Club, params: RequestParams = {}) =>
+    clubsUpdate: (id: number, data: ClubRequest, params: RequestParams = {}) =>
       this.request<Club, any>({
         path: `/api/v1/clubs/${id}/`,
         method: "PUT",
@@ -707,7 +968,7 @@ export class Api<
      */
     clubsPartialUpdate: (
       id: number,
-      data: PatchedClub,
+      data: PatchedClubRequest,
       params: RequestParams = {},
     ) =>
       this.request<Club, any>({
@@ -772,6 +1033,88 @@ export class Api<
      * No description
      *
      * @tags clubs
+     * @name ClubsClubRequestsList
+     * @request GET:/api/v1/clubs/club-requests/
+     * @secure
+     */
+    clubsClubRequestsList: (
+      query?: {
+        /** A page number within the paginated result set. */
+        page?: number;
+        /** Number of results to return per page. */
+        page_size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedBookClubRequestList, any>({
+        path: `/api/v1/clubs/club-requests/`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags clubs
+     * @name ClubsClubRequestsCreate
+     * @request POST:/api/v1/clubs/club-requests/
+     * @secure
+     */
+    clubsClubRequestsCreate: (
+      data: BookClubRequestRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<BookClubRequest, any>({
+        path: `/api/v1/clubs/club-requests/`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags clubs
+     * @name ClubsClubRequestsRetrieve
+     * @request GET:/api/v1/clubs/club-requests/{id}/
+     * @secure
+     */
+    clubsClubRequestsRetrieve: (id: number, params: RequestParams = {}) =>
+      this.request<BookClubRequest, any>({
+        path: `/api/v1/clubs/club-requests/${id}/`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags clubs
+     * @name ClubsClubRequestsMineRetrieve
+     * @request GET:/api/v1/clubs/club-requests/mine/
+     * @secure
+     */
+    clubsClubRequestsMineRetrieve: (params: RequestParams = {}) =>
+      this.request<BookClubRequest, any>({
+        path: `/api/v1/clubs/club-requests/mine/`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags clubs
      * @name ClubsReviewsList
      * @request GET:/api/v1/clubs/reviews/
      * @secure
@@ -803,7 +1146,7 @@ export class Api<
      * @request POST:/api/v1/clubs/reviews/
      * @secure
      */
-    clubsReviewsCreate: (data: BookReview, params: RequestParams = {}) =>
+    clubsReviewsCreate: (data: BookReviewRequest, params: RequestParams = {}) =>
       this.request<BookReview, any>({
         path: `/api/v1/clubs/reviews/`,
         method: "POST",
@@ -841,7 +1184,7 @@ export class Api<
      */
     clubsReviewsUpdate: (
       id: number,
-      data: BookReview,
+      data: BookReviewRequest,
       params: RequestParams = {},
     ) =>
       this.request<BookReview, any>({
@@ -864,7 +1207,7 @@ export class Api<
      */
     clubsReviewsPartialUpdate: (
       id: number,
-      data: PatchedBookReview,
+      data: PatchedBookReviewRequest,
       params: RequestParams = {},
     ) =>
       this.request<BookReview, any>({
@@ -1041,7 +1384,7 @@ export class Api<
      * @request PUT:/api/v1/users/me/
      * @secure
      */
-    usersMeUpdate: (data: User, params: RequestParams = {}) =>
+    usersMeUpdate: (data: UserRequest, params: RequestParams = {}) =>
       this.request<User, any>({
         path: `/api/v1/users/me/`,
         method: "PUT",
@@ -1060,7 +1403,10 @@ export class Api<
      * @request PATCH:/api/v1/users/me/
      * @secure
      */
-    usersMePartialUpdate: (data: PatchedUser, params: RequestParams = {}) =>
+    usersMePartialUpdate: (
+      data: PatchedUserRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<User, any>({
         path: `/api/v1/users/me/`,
         method: "PATCH",
@@ -1095,7 +1441,10 @@ export class Api<
      * @request POST:/api/v1/users/register/
      * @secure
      */
-    usersRegisterCreate: (data: UserRegister, params: RequestParams = {}) =>
+    usersRegisterCreate: (
+      data: UserRegisterRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<UserRegister, any>({
         path: `/api/v1/users/register/`,
         method: "POST",

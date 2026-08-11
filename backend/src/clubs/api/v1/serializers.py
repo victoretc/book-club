@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from clubs.models import BookReview, Club
+from clubs.models import BookReview, Club, ClubRequest
 
 
 User = get_user_model()
@@ -48,6 +48,7 @@ class ClubSerializer(serializers.ModelSerializer):
             "publication_year",
             "description",
             "telegram_chat_link",
+            "max_chat_link",
             "owner",
             "members",
             "reviews",
@@ -55,3 +56,25 @@ class ClubSerializer(serializers.ModelSerializer):
             "modified",
         ]
         read_only_fields = ["owner", "members", "created", "modified", "id"]
+
+
+class BookClubRequestSerializer(serializers.ModelSerializer):
+    requester = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = ClubRequest
+        fields = [
+            "id",
+            "book_title",
+            "book_authors",
+            "publication_year",
+            "description",
+            "status",
+            "requester",
+            "telegram_chat_link",
+            "max_chat_link",
+            "admin_comment",
+            "created",
+            "modified",
+        ]
+        read_only_fields = ["id", "status", "requester", "telegram_chat_link", "max_chat_link", "admin_comment", "created", "modified"]

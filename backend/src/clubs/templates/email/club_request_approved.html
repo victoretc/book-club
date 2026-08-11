@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Клуб создан</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding:80px 24px;">
+        <table role="presentation" width="400" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:24px;padding:48px 40px;">
+          <tr>
+            <td align="center" style="font-size:15px;color:#888;padding-bottom:8px;">
+              твой клуб создан
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="font-size:28px;font-weight:700;color:#1a1a1a;padding-bottom:16px;">
+              {{ request.book_title }}
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="font-size:16px;color:#555;padding-bottom:24px;line-height:1.6;">
+              Администратор одобрил твою заявку. Присоединяйся к обсуждению:
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-bottom:8px;">
+              <a href="{{ request.telegram_chat_link }}" style="display:inline-block;padding:14px 32px;background:#3B3EFF;color:#ffffff;border-radius:16px;font-size:16px;font-weight:600;text-decoration:none;">
+                Telegram чат
+              </a>
+            </td>
+          </tr>
+          {% if request.max_chat_link %}
+          <tr>
+            <td align="center">
+              <a href="{{ request.max_chat_link }}" style="display:inline-block;padding:14px 32px;background:#f2f2f4;color:#1a1a1a;border-radius:16px;font-size:16px;font-weight:600;text-decoration:none;margin-top:8px;">
+                Max чат
+              </a>
+            </td>
+          </tr>
+          {% endif %}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

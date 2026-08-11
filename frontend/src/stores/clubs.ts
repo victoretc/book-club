@@ -3,6 +3,7 @@ import { api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { showToast } from '@/stores/toast'
 import type { Club, ClubsListParams } from '@/api/data-contracts'
+import type { BookClubRequestRequest, PatchedClubRequest } from '@/api/Api'
 
 interface ClubsState {
   clubs: Club[]
@@ -144,13 +145,13 @@ export const useClubsStore = defineStore('clubs', {
       return authStore.user ? Number(club.owner) === Number(authStore.user.id) : false
     },
 
-    async createClub(data: Partial<Club>) {
+    async createClubRequest(data: BookClubRequestRequest) {
       this.isLoading = true
       try {
-        const response = await api.api.clubsCreate(data as Club)
+        const response = await api.api.clubsClubRequestsCreate(data)
         return response.data
       } catch (error) {
-        console.error('Error creating club:', error)
+        console.error('Error creating club request:', error)
         throw error
       } finally {
         this.isLoading = false
@@ -160,7 +161,7 @@ export const useClubsStore = defineStore('clubs', {
     async updateClub(clubId: number, data: Partial<Club>) {
       this.isLoading = true
       try {
-        const response = await api.api.clubsUpdate(clubId, data as Club)
+        const response = await api.api.clubsPartialUpdate(clubId, data as PatchedClubRequest)
         return response.data
       } catch (error) {
         console.error('Error updating club:', error)

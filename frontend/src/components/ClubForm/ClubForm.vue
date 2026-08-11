@@ -4,7 +4,10 @@ import { useRouter } from 'vue-router'
 import { useForm, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
 import { useClubsStore } from '@/stores/clubs'
+import { showToast } from '@/stores/toast'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
+import type { Club } from '@/api/data-contracts'
+import type { BookClubRequestRequest } from '@/api/Api'
 
 interface Props {
   clubId?: number | null
@@ -27,10 +30,6 @@ const validationSchema = yup.object({
   bookAuthors: yup.string().required('Автор(ы) книги обязательно'),
   publicationYear: yup.number().typeError('Введите число').required('Год выпуска обязательно'),
   description: yup.string().required('Описание книги обязательно'),
-  telegramChatLink: yup
-    .string()
-    .required('Ссылка на Telegram чат обязательна')
-    .matches(/^https:\/\/t\.me\//, 'Ссылка должна начинаться с https://t.me/'),
 })
 
 const { handleSubmit, setValues } = useForm({
@@ -47,7 +46,6 @@ async function loadClub() {
       bookAuthors: club.bookAuthors,
       publicationYear: club.publicationYear,
       description: club.description,
-      telegramChatLink: club.telegramChatLink,
     })
   } catch {
     router.push({ name: 'clubs' })
@@ -63,9 +61,11 @@ const onSubmit = handleSubmit(async (values) => {
   errorMsg.value = ''
   try {
     if (props.clubId) {
-      await clubsStore.updateClub(props.clubId, values)
+      await clubsStore.updateClub(props.clubId, values as Partial<Club>)
+      showToast('Клуб успешно обновлен', 'success')
     } else {
-      await clubsStore.createClub(values)
+      await clubsStore.createClubRequest(values as BookClubRequestRequest)
+      showToast('Заявка отправлена. Администратор рассмотрит её в ближайшее время.', 'success')
     }
     emit('submit')
     router.push({ name: 'clubs' })
@@ -136,19 +136,6 @@ const onSubmit = handleSubmit(async (values) => {
         data-testid="club-form-description-input"
       />
       <ErrorMessage name="description" class="field-error" />
-    </div>
-
-    <div class="field">
-      <label for="telegramChatLink">Ссылка на Telegram чат *</label>
-      <Field
-        id="telegramChatLink"
-        name="telegramChatLink"
-        placeholder="https://t.me/..."
-        :disabled="isLoading"
-        class="input"
-        data-testid="club-form-telegram-input"
-      />
-      <ErrorMessage name="telegramChatLink" class="field-error" />
     </div>
 
     <div v-if="errorMsg" class="error-msg" data-testid="club-form-error">{{ errorMsg }}</div>

@@ -80,6 +80,12 @@ export interface Club {
    * @maxLength 200
    */
   telegramChatLink: string;
+  /**
+   * Link on Max chat
+   * @format uri
+   * @maxLength 200
+   */
+  maxChatLink?: string;
 }
 
 export type ClubsCreateData = Club;

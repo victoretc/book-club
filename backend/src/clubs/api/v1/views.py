@@ -12,8 +12,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from clubs.api.v1.filters import ClubFilter, ReviewFilter
-from clubs.api.v1.serializers import BookReviewSerializer, ClubSerializer
-from clubs.models import BookReview, Club
+from clubs.api.v1.serializers import BookClubRequestSerializer, BookReviewSerializer, ClubSerializer
+from clubs.models import BookReview, Club, ClubRequest
 
 
 User = get_user_model()
@@ -108,3 +108,31 @@ class ReviewViewSet(ModelViewSet):
 
     def perform_create(self, serializer: BaseSerializer) -> None:
         serializer.save(user=self.request.user)
+
+
+class ClubRequestViewSet(ModelViewSet):
+    serializer_class = BookClubRequestSerializer
+    permission_classes = [permissions.IsAdminUser]
+    http_method_names = ["get", "post"]
+
+    def get_permissions(self) -> list[permissions.BasePermission]:
+        if self.action == "create":
+            return [permission() for permission in [permissions.IsAuthenticated]]
+        return [permission() for permission in [permissions.IsAdminUser]]
+
+    def get_queryset(self) -> QuerySet[ClubRequest]:
+        return ClubRequest.objects.select_related("requester")
+
+    def perform_create(self, serializer: BaseSerializer) -> None:
+        serializer.save(requester=self.request.user)
+
+    @action(detail=False, methods=["get"], url_path="mine")
+    def mine(self, request: Request) -> Response:
+        queryset = self.get_queryset().filter(requester=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

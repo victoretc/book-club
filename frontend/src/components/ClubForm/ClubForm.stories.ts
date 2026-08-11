@@ -54,6 +54,7 @@ export const Edit: Story = {
         publicationYear: 2020,
         description: 'Test description',
         telegramChatLink: 'https://t.me/test',
+        maxChatLink: '',
         owner: 1,
         members: [],
         reviews: [],

@@ -32,6 +32,12 @@ function openTelegram() {
   }
 }
 
+function openMaxChat() {
+  if (club.value?.maxChatLink) {
+    window.open(club.value.maxChatLink, '_blank', 'noopener,noreferrer')
+  }
+}
+
 async function fetchClub() {
   isLoading.value = true
   error.value = ''
@@ -120,6 +126,15 @@ onMounted(fetchClub)
           @click="openTelegram"
         >
           Telegram чат
+        </BaseButton>
+
+        <BaseButton
+          v-if="club.maxChatLink"
+          variant="outline"
+          testId="club-details-max-chat-button"
+          @click="openMaxChat"
+        >
+          Max чат
         </BaseButton>
 
         <template v-if="authStore.isAuthenticated">

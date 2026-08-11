@@ -21,7 +21,6 @@ const { mockHandleSubmit } = vi.hoisted(() => ({
         bookAuthors: 'New Author',
         publicationYear: 2024,
         description: 'New description',
-        telegramChatLink: 'https://t.me/newclub',
       })
     }
   }),
@@ -63,13 +62,13 @@ const mockClub = {
   bookAuthors: 'Test Author',
   publicationYear: 2020,
   description: 'Test description',
-  telegramChatLink: 'https://t.me/test',
 }
 
 describe('ClubForm', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     push.mockClear()
+    mockHandleSubmit.mockClear()
   })
 
   it('renders create form title', () => {
@@ -92,11 +91,10 @@ describe('ClubForm', () => {
     expect(wrapper.find('#bookAuthors').exists()).toBe(true)
     expect(wrapper.find('#publicationYear').exists()).toBe(true)
     expect(wrapper.find('#description').exists()).toBe(true)
-    expect(wrapper.find('#telegramChatLink').exists()).toBe(true)
   })
 
-  it('submits create form and navigates to clubs', async () => {
-    vi.spyOn(api.api, 'clubsCreate').mockResolvedValue({ data: { id: 1 } } as any)
+  it('submits create form, creates club request and navigates to clubs', async () => {
+    const createRequestSpy = vi.spyOn(api.api, 'clubsClubRequestsCreate').mockResolvedValue({ data: { id: 1 } } as any)
 
     const wrapper = createWrapper()
 
@@ -104,13 +102,19 @@ describe('ClubForm', () => {
     await flushPromises()
     await nextTick()
 
+    expect(createRequestSpy).toHaveBeenCalledWith({
+      bookTitle: 'New Book',
+      bookAuthors: 'New Author',
+      publicationYear: 2024,
+      description: 'New description',
+    })
     expect(push).toHaveBeenCalledWith({ name: 'clubs' })
   })
 
   it('submits edit form and navigates to clubs', async () => {
     const clubsStore = useClubsStore()
     vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue(mockClub as any)
-    vi.spyOn(api.api, 'clubsUpdate').mockResolvedValue({ data: { id: 1 } } as any)
+    const partialUpdateSpy = vi.spyOn(api.api, 'clubsPartialUpdate').mockResolvedValue({ data: { id: 1 } } as any)
 
     const wrapper = createWrapper({ clubId: 1 })
     await flushPromises()
@@ -119,6 +123,7 @@ describe('ClubForm', () => {
     await flushPromises()
     await nextTick()
 
+    expect(partialUpdateSpy).toHaveBeenCalled()
     expect(push).toHaveBeenCalledWith({ name: 'clubs' })
   })
 })

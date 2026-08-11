@@ -57,11 +57,11 @@ tasks:
 
   all:
     cmds:
-      - docker compose up -d postgres
       - task: migrations
       - task: migrate
       - task: csu
       - task: run 
+      - task: loaddata
 
   help:
     cmds:
