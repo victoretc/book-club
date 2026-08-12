@@ -59,7 +59,7 @@ onMounted(() => {
 
         <div class="cookie-actions">
           <BaseButton variant="primary" data-testid="cookie-accept-button" @click="acceptCookies">
-            Принять и продолжить
+            Принять
           </BaseButton>
           <BaseButton variant="ghost" data-testid="cookie-more-button" @click="openAgreement">
             Подробнее

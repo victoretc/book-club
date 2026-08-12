@@ -1,9 +1,25 @@
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 defineOptions({ name: 'LandingPage' })
 
 const router = useRouter()
+
+const headerHeight = ref(0)
+
+function updateHeaderHeight() {
+  headerHeight.value = document.querySelector('[data-testid="header"]')?.getBoundingClientRect().height ?? 0
+}
+
+onMounted(() => {
+  updateHeaderHeight()
+  window.addEventListener('resize', updateHeaderHeight)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateHeaderHeight)
+})
 
 const openClubs = () => router.push('/clubs')
 </script>
@@ -19,7 +35,7 @@ const openClubs = () => router.push('/clubs')
         Если на сайте не найдете клуб по книге, которую читаете, — вы всегда сможете создать клуб,
         а мы поможем найти собеседников.
       </p>
-      <span class="hero-rule" aria-hidden="true" />
+      <!-- <span class="hero-rule" aria-hidden="true" /> -->
       <button type="button" class="landing-cta" @click="openClubs">Смотреть клубы</button>
     </section>
   </div>
@@ -31,6 +47,8 @@ const openClubs = () => router.push('/clubs')
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: calc(100vh - v-bind(headerHeight));
+  min-height: calc(100dvh - v-bind(headerHeight));
 }
 
 .hero {
@@ -89,6 +107,7 @@ const openClubs = () => router.push('/clubs')
   cursor: pointer;
   box-shadow: 0 10px 24px -10px rgba(59, 62, 255, 0.45);
   transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  margin: 40px 0 36px;
 }
 
 .landing-cta:hover {
