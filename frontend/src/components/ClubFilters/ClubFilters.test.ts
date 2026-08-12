@@ -60,7 +60,7 @@ describe('ClubFilters', () => {
 
   it('calls filterByMembership when authenticated user clicks filter', async () => {
     const authStore = useAuthStore()
-    authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } } as any)
+    authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } })
     const clubsStore = useClubsStore()
     vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
 
@@ -74,7 +74,7 @@ describe('ClubFilters', () => {
 
   it('does not redirect when authenticated user clicks filter', async () => {
     const authStore = useAuthStore()
-    authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } } as any)
+    authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } })
     const clubsStore = useClubsStore()
     vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
 

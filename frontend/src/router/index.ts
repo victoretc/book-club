@@ -75,6 +75,14 @@ const router = createRouter({
     },
     {
       path: '/',
+      name: 'landing',
+      component: () => import('@/views/Landing.vue'),
+      meta: {
+        title: 'Читальная — книжные клубы',
+      },
+    },
+    {
+      path: '/clubs',
       name: 'clubs',
       component: () => import('@/views/ClubCards.vue'),
       meta: { title: 'Клубы' },

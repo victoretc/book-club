@@ -15,7 +15,7 @@ const openCategory = (slug: string) => {
 }
 
 const goToAllCategories = () => {
-  router.push('/')
+  router.push('/clubs')
 }
 </script>
 
@@ -61,7 +61,7 @@ const goToAllCategories = () => {
   border-radius: 32px;
   padding: 24px;
   position: sticky;
-  top: 24px;
+  top: 96px;
 }
 
 .sidebar-title {

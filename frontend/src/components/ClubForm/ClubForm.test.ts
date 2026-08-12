@@ -14,7 +14,7 @@ vi.mock('vue-router', () => ({
 }))
 
 const { mockHandleSubmit } = vi.hoisted(() => ({
-  mockHandleSubmit: vi.fn((cb: any) => {
+  mockHandleSubmit: vi.fn((cb: (values: Record<string, unknown>) => void) => {
     return (e?: Event) => {
       e?.preventDefault?.()
       cb({
@@ -89,7 +89,7 @@ describe('ClubForm', () => {
 
   it('renders edit form title when clubId provided', async () => {
     const clubsStore = useClubsStore()
-    vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue(mockClub as any)
+    vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue(mockClub as unknown as Awaited<ReturnType<typeof clubsStore.fetchClub>>)
 
     const wrapper = createWrapper({ clubId: 1 })
     await flushPromises()
@@ -108,11 +108,12 @@ describe('ClubForm', () => {
 
   it('submits create form, creates club request and navigates to clubs', async () => {
     seedCategories()
-    const createRequestSpy = vi.spyOn(api.api, 'clubsClubRequestsCreate').mockResolvedValue({ data: { id: 1 } } as any)
+    const createRequestSpy = vi.spyOn(api.api, 'clubsClubRequestsCreate').mockResolvedValue({ data: { id: 1 } } as unknown as Awaited<ReturnType<typeof api.api.clubsClubRequestsCreate>>)
 
     const wrapper = createWrapper()
 
-    await wrapper.find('#category').setValue(1)
+    await wrapper.find('[data-testid="club-form-category-select"] .custom-select__trigger').trigger('click')
+    await wrapper.find('[data-testid="club-form-category-select"] .custom-select__option').trigger('click')
     await wrapper.find('form').trigger('submit')
     await flushPromises()
     await nextTick()
@@ -130,8 +131,8 @@ describe('ClubForm', () => {
   it('submits edit form with prefilled category and navigates to clubs', async () => {
     seedCategories()
     const clubsStore = useClubsStore()
-    vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue({ ...mockClub, category: 11 } as any)
-    const partialUpdateSpy = vi.spyOn(api.api, 'clubsPartialUpdate').mockResolvedValue({ data: { id: 1 } } as any)
+    vi.spyOn(clubsStore, 'fetchClub').mockResolvedValue({ ...mockClub, category: 11 } as unknown as Awaited<ReturnType<typeof clubsStore.fetchClub>>)
+    const partialUpdateSpy = vi.spyOn(api.api, 'clubsPartialUpdate').mockResolvedValue({ data: { id: 1 } } as unknown as Awaited<ReturnType<typeof api.api.clubsPartialUpdate>>)
 
     const wrapper = createWrapper({ clubId: 1 })
     await flushPromises()

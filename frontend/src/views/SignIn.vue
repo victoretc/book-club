@@ -39,7 +39,7 @@ async function verifyCodeHandler() {
     if (joinClubId) {
       router.push({ name: 'club-details', params: { id: Number(joinClubId) } })
     } else {
-      router.push('/')
+      router.push('/clubs')
     }
   } catch (e) {
     const err = e as { detail?: string }

@@ -4,43 +4,48 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useReviewsStore } from '@/stores/reviews'
 import { api } from '@/api'
+import type { BookReview, Member } from '@/api/Api'
 import ClubReviews from './ClubReviews.vue'
 
 const clubId = 42
 const userId = 1
 const mockUser = { id: userId, username: 'testuser' }
-const mockMembers = [
+const mockMembers: Member[] = [
   { id: userId, username: 'testuser' },
   { id: 2, username: 'otheruser' },
-] as any[]
+]
 
 const otherReview = {
   id: 1,
+  club: clubId,
   user: { id: 2, username: 'otheruser' },
   review: 'Great book!',
   assessment: 5,
   readPages: 350,
   created: '2024-01-01T10:00:00Z',
-}
+  modified: null,
+} as BookReview
 
 const myReview = {
   id: 5,
+  club: clubId,
   user: { id: userId, username: 'testuser' },
   review: 'My review',
   assessment: 4,
   readPages: 200,
   created: '2024-01-01T10:00:00Z',
-}
+  modified: null,
+} as BookReview
 
 function createWrapper(
   { reviews, memberList }:
-  { reviews?: any[]; memberList?: any[] } = {},
+  { reviews?: BookReview[]; memberList?: Member[] } = {},
 ) {
   const pinia = createPinia()
   setActivePinia(pinia)
 
   const authStore = useAuthStore()
-  authStore.$patch({ accessToken: 'test', user: mockUser } as any)
+  authStore.$patch({ accessToken: 'test', user: mockUser })
 
   const reviewsStore = useReviewsStore()
   vi.spyOn(reviewsStore, 'fetchClubReviews').mockResolvedValue(undefined)
@@ -67,7 +72,7 @@ function createWrapper(
 
 describe('ClubReviews', () => {
   beforeEach(() => {
-    window.confirm = vi.fn(() => true) as any
+    window.confirm = vi.fn(() => true) as unknown as typeof window.confirm
     Element.prototype.scrollIntoView = vi.fn()
   })
 
@@ -111,7 +116,7 @@ describe('ClubReviews', () => {
   })
 
   it('calls createReview on form submit', async () => {
-    vi.spyOn(api.api, 'clubsReviewsCreate').mockResolvedValue({ data: myReview } as any)
+    vi.spyOn(api.api, 'clubsReviewsCreate').mockResolvedValue({ data: myReview } as unknown as Awaited<ReturnType<typeof api.api.clubsReviewsCreate>>)
 
     const wrapper = createWrapper({ memberList: mockMembers })
     await flushPromises()
@@ -143,7 +148,7 @@ describe('ClubReviews', () => {
   })
 
   it('calls deleteReview when clicking delete', async () => {
-    vi.spyOn(api.api, 'clubsReviewsDestroy').mockResolvedValue(undefined as any)
+    vi.spyOn(api.api, 'clubsReviewsDestroy').mockResolvedValue(undefined as unknown as Awaited<ReturnType<typeof api.api.clubsReviewsDestroy>>)
 
     const wrapper = createWrapper({
       reviews: [myReview],

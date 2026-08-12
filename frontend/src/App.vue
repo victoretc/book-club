@@ -1,15 +1,20 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
 import AppHeader from '@/components/AppHeader/AppHeader.vue'
+import AppFooter from '@/components/AppFooter/AppFooter.vue'
 import ToastNotification from '@/components/ToastNotification/ToastNotification.vue'
 import CookieConsent from '@/components/CookieConsent/CookieConsent.vue'
+
+const route = useRoute()
 </script>
 
 <template>
   <div class="app-layout">
-    <AppHeader />
+    <AppHeader v-if="!route.meta.hideChrome" />
     <main>
       <router-view />
     </main>
+    <AppFooter v-if="!route.meta.hideChrome" />
     <ToastNotification />
     <CookieConsent />
   </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useForm, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
@@ -30,10 +30,24 @@ const errorMsg = ref('')
 const parentCategoryId = ref<number | ''>('')
 const subcategoryId = ref<number | ''>('')
 const categoryError = ref('')
+const isCategoryOpen = ref(false)
+const isSubcategoryOpen = ref(false)
+const categoryRef = ref<HTMLDivElement | null>(null)
+const subcategoryRef = ref<HTMLDivElement | null>(null)
 
 const subcategories = computed(() => {
   if (parentCategoryId.value === '') return []
   return categoriesStore.childrenOf(parentCategoryId.value)
+})
+
+const selectedCategoryName = computed(() => {
+  if (parentCategoryId.value === '') return ''
+  return categoriesStore.nameById(parentCategoryId.value)
+})
+
+const selectedSubcategoryName = computed(() => {
+  if (subcategoryId.value === '') return ''
+  return categoriesStore.nameById(subcategoryId.value)
 })
 
 const validationSchema = yup.object({
@@ -62,6 +76,35 @@ function onSubcategoryChange() {
   categoryError.value = ''
 }
 
+function selectParentCategory(id: number) {
+  parentCategoryId.value = id
+  isCategoryOpen.value = false
+  onParentCategoryChange()
+}
+
+function selectSubcategory(id: number) {
+  subcategoryId.value = id
+  isSubcategoryOpen.value = false
+  onSubcategoryChange()
+}
+
+function toggleCategory() {
+  isCategoryOpen.value = !isCategoryOpen.value
+}
+
+function toggleSubcategory() {
+  isSubcategoryOpen.value = !isSubcategoryOpen.value
+}
+
+function handleOutsideClick(e: MouseEvent) {
+  if (categoryRef.value && !categoryRef.value.contains(e.target as Node)) {
+    isCategoryOpen.value = false
+  }
+  if (subcategoryRef.value && !subcategoryRef.value.contains(e.target as Node)) {
+    isSubcategoryOpen.value = false
+  }
+}
+
 async function loadClub() {
   if (!props.clubId) return
   isLoading.value = true
@@ -86,6 +129,11 @@ async function loadClub() {
 onMounted(() => {
   loadClub()
   categoriesStore.fetchCategories()
+  document.addEventListener('click', handleOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleOutsideClick)
 })
 
 const onSubmit = handleSubmit(async (values) => {
@@ -172,39 +220,105 @@ const onSubmit = handleSubmit(async (values) => {
       <ErrorMessage name="description" class="field-error" />
     </div>
 
-    <div class="field">
-      <label for="category">Категория *</label>
-      <select
-        id="category"
-        v-model="parentCategoryId"
-        class="input select"
-        :disabled="isLoading"
+    <div ref="categoryRef" class="field">
+      <label id="category-label" for="category">Категория *</label>
+      <div
+        class="custom-select"
+        :class="{ open: isCategoryOpen }"
         data-testid="club-form-category-select"
-        @change="onParentCategoryChange"
       >
-        <option value="">Выберите категорию</option>
-        <option v-for="c in categoriesStore.topLevelCategories" :key="c.id" :value="c.id">
-          {{ c.name }}
-        </option>
-      </select>
+        <button
+          id="category"
+          type="button"
+          class="custom-select__trigger"
+          :class="{ placeholder: !selectedCategoryName }"
+          :disabled="isLoading"
+          aria-haspopup="listbox"
+          :aria-expanded="isCategoryOpen"
+          @click="toggleCategory"
+        >
+          <span>{{ selectedCategoryName || 'Выберите категорию' }}</span>
+          <svg
+            class="custom-select__chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        <ul class="custom-select__options" role="listbox" aria-labelledby="category-label">
+          <li v-for="c in categoriesStore.topLevelCategories" :key="c.id">
+            <button
+              type="button"
+              role="option"
+              class="custom-select__option"
+              :class="{ selected: parentCategoryId === c.id }"
+              :aria-selected="parentCategoryId === c.id"
+              :disabled="isLoading"
+              @click="selectParentCategory(c.id)"
+            >
+              {{ c.name }}
+            </button>
+          </li>
+        </ul>
+      </div>
       <span v-if="categoryError" class="field-error" data-testid="club-form-category-error">{{ categoryError }}</span>
     </div>
 
-    <div v-if="subcategories.length" class="field">
-      <label for="subcategory">Подкатегория</label>
-      <select
-        id="subcategory"
-        v-model="subcategoryId"
-        class="input select"
-        :disabled="isLoading"
+    <div v-if="subcategories.length" ref="subcategoryRef" class="field">
+      <label id="subcategory-label" for="subcategory">Подкатегория</label>
+      <div
+        class="custom-select"
+        :class="{ open: isSubcategoryOpen }"
         data-testid="club-form-subcategory-select"
-        @change="onSubcategoryChange"
       >
-        <option value="">Не выбрана</option>
-        <option v-for="s in subcategories" :key="s.id" :value="s.id">
-          {{ s.name }}
-        </option>
-      </select>
+        <button
+          id="subcategory"
+          type="button"
+          class="custom-select__trigger"
+          :class="{ placeholder: !selectedSubcategoryName }"
+          :disabled="isLoading"
+          aria-haspopup="listbox"
+          :aria-expanded="isSubcategoryOpen"
+          @click="toggleSubcategory"
+        >
+          <span>{{ selectedSubcategoryName || 'Не выбрана' }}</span>
+          <svg
+            class="custom-select__chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        <ul class="custom-select__options" role="listbox" aria-labelledby="subcategory-label">
+          <li v-for="s in subcategories" :key="s.id">
+            <button
+              type="button"
+              role="option"
+              class="custom-select__option"
+              :class="{ selected: subcategoryId === s.id }"
+              :aria-selected="subcategoryId === s.id"
+              :disabled="isLoading"
+              @click="selectSubcategory(s.id)"
+            >
+              {{ s.name }}
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div v-if="errorMsg" class="error-msg" data-testid="club-form-error">{{ errorMsg }}</div>
@@ -213,7 +327,7 @@ const onSubmit = handleSubmit(async (values) => {
       <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading" testId="club-form-submit-button">
         {{ clubId ? 'Сохранить изменения' : 'Создать клуб' }}
       </BaseButton>
-      <BaseButton variant="outline" full-width @click="router.push('/')" :disabled="isLoading" testId="club-form-cancel-button">
+      <BaseButton variant="outline" full-width @click="router.push('/clubs')" :disabled="isLoading" testId="club-form-cancel-button">
         Отмена
       </BaseButton>
     </div>
@@ -251,8 +365,7 @@ const onSubmit = handleSubmit(async (values) => {
 }
 
 .input,
-.textarea,
-.select {
+.textarea {
   width: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-stroke-subtle);
@@ -264,18 +377,106 @@ const onSubmit = handleSubmit(async (values) => {
   transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
-.select {
-  height: 48px;
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 40px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239AA0AC' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  cursor: pointer;
+.custom-select {
+  position: relative;
 }
 
-.select:disabled {
+.custom-select__trigger {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.custom-select__trigger.placeholder {
+  color: var(--color-text-secondary);
+}
+
+.custom-select__trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.custom-select__trigger:hover:not(:disabled) {
+  border-color: var(--color-brand);
+}
+
+.custom-select__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.custom-select.open .custom-select__chevron {
+  transform: rotate(180deg);
+}
+
+.custom-select__options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  z-index: 20;
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.custom-select.open .custom-select__options {
+  max-height: 240px;
+  opacity: 1;
+  visibility: visible;
+  overflow-y: auto;
+}
+
+.custom-select__option {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.custom-select__option:hover:not(:disabled) {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.custom-select__option.selected {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+  font-weight: 600;
+  cursor: default;
+}
+
+.custom-select__option:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -296,7 +497,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 .input:focus,
 .textarea:focus,
-.select:focus {
+.custom-select__trigger:focus {
   outline: none;
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px var(--color-brand-ring);

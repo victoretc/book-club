@@ -31,7 +31,7 @@ const router = useRouter()
     </div>
 
     <div class="agreement-actions">
-      <BaseButton variant="primary" data-testid="agreement-back-button" @click="router.push('/')">
+      <BaseButton variant="primary" data-testid="agreement-back-button" @click="router.push('/clubs')">
         На главную
       </BaseButton>
     </div>

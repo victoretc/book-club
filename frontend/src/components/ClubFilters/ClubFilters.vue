@@ -148,6 +148,18 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   gap: 16px;
 }
 
+@media (min-width: 769px) {
+  .filters-section {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    margin-top: -12px;
+    background: var(--color-bg);
+  }
+}
+
 .search-bar {
   display: flex;
   align-items: center;

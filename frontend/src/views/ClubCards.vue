@@ -2,7 +2,6 @@
 import { onMounted, computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useClubsStore } from '@/stores/clubs'
-import { useAuthStore } from '@/stores/auth'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Club, Member } from '@/api/Api'
 import ClubFilters from '@/components/ClubFilters/ClubFilters.vue'
@@ -16,7 +15,6 @@ const clubsStore = useClubsStore()
 if (clubsStore.clubs.length === 0) {
   clubsStore.isLoading = true
 }
-const authStore = useAuthStore()
 const categoriesStore = useCategoriesStore()
 const router = useRouter()
 const route = useRoute()
@@ -31,7 +29,7 @@ const sidebarCategories = computed(() => {
 })
 const sidebarTitle = computed(() => (currentCategory.value ? 'Подкатегории' : 'Категории'))
 const breadcrumbTrail = computed<Crumb[]>(() => {
-  const trail: Crumb[] = [{ label: 'Клубы', to: '/' }]
+  const trail: Crumb[] = [{ label: 'Клубы', to: '/clubs' }]
   if (currentCategory.value) {
     const path = categoriesStore.pathById(currentCategory.value.id)
     path.forEach((c, i) => {
@@ -87,24 +85,14 @@ const loadClubsByRoute = async () => {
 }
 
 const goBackToCategories = () => {
-  router.push('/')
+  router.push('/clubs')
+}
+
+const openCategory = (slug: string) => {
+  router.push(`/categories/${slug}`)
 }
 
 const isMember = (club: Club) => clubsStore.isCurrentUserMember(club)
-
-const joinClub = async (clubId: number) => {
-  if (!authStore.isAuthenticated) {
-    router.push({ path: '/signin', query: { join: String(clubId) } })
-    return
-  }
-
-  try {
-    await clubsStore.joinClub(clubId)
-    router.push(`/clubs/${clubId}`)
-  } catch {
-    console.error('Ошибка при присоединении')
-  }
-}
 
 const openClubPage = (clubId: number) => {
   router.push(`/clubs/${clubId}`)
@@ -143,6 +131,28 @@ const memberInitials = (club: Club) => {
     </BreadcrumbsNav>
 
     <ClubFilters />
+
+    <nav class="category-chips" aria-label="Категории">
+      <button
+        v-if="currentCategory"
+        type="button"
+        class="chip chip--all"
+        :class="{ 'chip--active': !currentCategory }"
+        @click="goBackToCategories"
+      >
+        Все категории
+      </button>
+      <button
+        v-for="c in sidebarCategories"
+        :key="c.id"
+        type="button"
+        class="chip"
+        :class="{ 'chip--active': currentCategory?.id === c.id }"
+        @click="openCategory(c.slug)"
+      >
+        {{ c.name }}
+      </button>
+    </nav>
 
     <div class="content-grid">
       <div class="clubs-column">
@@ -219,6 +229,7 @@ const memberInitials = (club: Club) => {
       </div>
 
       <CategorySidebar
+        class="category-sidebar"
         :title="sidebarTitle"
         :categories="sidebarCategories"
         :active-id="currentCategory?.id"
@@ -271,6 +282,56 @@ const memberInitials = (club: Club) => {
 
 .crumb-back svg {
   flex-shrink: 0;
+}
+
+.category-chips {
+  display: none;
+}
+
+.category-sidebar {
+  display: block;
+}
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.21;
+  color: var(--color-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.chip:not(.chip--active):hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+  border-color: var(--color-brand-ring);
+}
+
+.chip--active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #FFFFFF;
+}
+
+.chip--all {
+  border-style: dashed;
+  border-color: var(--color-brand-ring);
+  color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.chip--all.chip--active {
+  border-style: solid;
 }
 
 .content-grid {
@@ -572,6 +633,25 @@ const memberInitials = (club: Club) => {
 @media (max-width: 768px) {
   .clubs-page {
     gap: 16px;
+  }
+
+  .category-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px 2px 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .category-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-sidebar {
+    display: none;
   }
 
   .club-card {

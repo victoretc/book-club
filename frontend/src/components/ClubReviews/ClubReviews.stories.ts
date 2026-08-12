@@ -48,7 +48,7 @@ function setupStore(user = mockUser) {
   const reviewsStore = useReviewsStore()
   reviewsStore.$patch({ clubReviews: { [mockClubId]: mockReviews } })
   const authStore = useAuthStore()
-  authStore.$patch({ accessToken: 'test', user } as any)
+  authStore.$patch({ accessToken: 'test', user })
 }
 
 export const Default: Story = {

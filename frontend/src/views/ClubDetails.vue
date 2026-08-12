@@ -23,7 +23,7 @@ const isLoading = ref(false)
 const error = ref('')
 
 const breadcrumbTrail = computed<Crumb[]>(() => {
-  const trail: Crumb[] = [{ label: 'Клубы', to: '/' }]
+  const trail: Crumb[] = [{ label: 'Клубы', to: '/clubs' }]
   if (club.value) {
     if (club.value.category != null) {
       const path = categoriesStore.pathById(club.value.category)
@@ -83,7 +83,7 @@ async function handleLeave() {
   isLeaving.value = true
   try {
     await clubsStore.leaveClub(Number(route.params.id))
-    router.push('/')
+    router.push('/clubs')
   } catch {
     error.value = 'Не удалось покинуть клуб'
     isLeaving.value = false
