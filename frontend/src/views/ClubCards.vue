@@ -9,6 +9,7 @@ import CategorySidebar from '@/components/CategorySidebar/CategorySidebar.vue'
 import PaginationControls from '@/components/PaginationControls/PaginationControls.vue'
 import BreadcrumbsNav from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import type { Crumb } from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
+import { useClubsView } from '@/composables/useClubsView'
 import { memberReadingText } from '@/utils/plural'
 
 const clubsStore = useClubsStore()
@@ -18,6 +19,7 @@ if (clubsStore.clubs.length === 0) {
 const categoriesStore = useCategoriesStore()
 const router = useRouter()
 const route = useRoute()
+const { viewMode } = useClubsView()
 
 const currentSlug = computed(() => String(route.params.slug ?? ''))
 const currentCategory = computed(() => categoriesStore.categoryBySlug(currentSlug.value))
@@ -157,8 +159,8 @@ const memberInitials = (club: Club) => {
     <div class="content-grid">
       <div class="clubs-column">
         <Transition name="fade-slide" mode="out-in">
-          <div v-if="clubsStore.isLoading" key="loading" class="clubs-list clubs-loading">
-            <div v-for="n in 3" :key="n" class="skeleton-card">
+          <div v-if="clubsStore.isLoading" key="loading" class="clubs-list clubs-loading" :class="`clubs-list--${viewMode}`">
+            <div v-for="n in 3" :key="n" class="skeleton-card" :class="`skeleton-card--${viewMode}`">
               <div class="skeleton-heading">
                 <div class="skeleton-line skeleton-title" />
                 <div class="skeleton-line skeleton-badge" />
@@ -175,11 +177,12 @@ const memberInitials = (club: Club) => {
           <div v-else-if="clubsStore.clubs.length === 0" key="empty" class="no-results">
             <img src="@/assets/images/not-found.png" alt="Ничего не найдено" class="not-found-img" />
           </div>
-          <div v-else class="clubs-list">
+          <div v-else class="clubs-list" :class="`clubs-list--${viewMode}`">
             <div
               v-for="club in clubsStore.clubs"
               :key="club.id"
               class="club-card"
+              :class="`club-card--${viewMode}`"
               @click="openClubPage(club.id)"
             >
               <div class="card-header">
@@ -260,7 +263,7 @@ const memberInitials = (club: Club) => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 24px;
+  gap: 16px;
 }
 
 .crumb-back {
@@ -360,6 +363,19 @@ const memberInitials = (club: Club) => {
   width: 100%;
 }
 
+@media (min-width: 768px) {
+  .clubs-list--grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .clubs-list--grid .club-card,
+  .clubs-list--grid .skeleton-card {
+    max-width: none;
+  }
+}
+
 .pagination-wrap {
   width: 100%;
 }
@@ -380,6 +396,60 @@ const memberInitials = (club: Club) => {
 .club-card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
+}
+
+@media (min-width: 768px) {
+  .club-card--grid {
+    aspect-ratio: 1 / 1;
+    height: 100%;
+    border-radius: 24px;
+    padding: 20px;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .club-card--grid .card-title {
+    font-size: 22px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .club-card--grid .card-author {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .club-card--grid .card-desc {
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-line-clamp: 2;
+  }
+
+  .club-card--grid .card-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    gap: 8px;
+  }
+
+  .club-card--grid .year-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .club-card--grid .member-avatar,
+  .club-card--grid .you-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .club-card--grid .member-count {
+    font-size: 13px;
+  }
 }
 
 .card-header {
@@ -527,6 +597,17 @@ const memberInitials = (club: Club) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .skeleton-card--grid {
+    aspect-ratio: 1 / 1;
+    height: 100%;
+    border-radius: 24px;
+    padding: 20px;
+    gap: 8px;
+    overflow: hidden;
+  }
 }
 
 .skeleton-heading {

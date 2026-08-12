@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
+import { useClubsView } from '@/composables/useClubsView'
 import ClubFilters from './ClubFilters.vue'
 
 const push = vi.fn()
@@ -28,6 +29,7 @@ describe('ClubFilters', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     push.mockClear()
+    useClubsView().viewMode.value = 'list'
   })
 
   it('renders search input', () => {
@@ -96,5 +98,30 @@ describe('ClubFilters', () => {
     await wrapper.find('.search-btn').trigger('click')
 
     expect(clubsStore.searchClubs).toHaveBeenCalledWith('fantasy')
+  })
+
+  it('shows search icon instead of text label', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('.search-btn-text').exists()).toBe(false)
+    expect(wrapper.find('.search-icon').exists()).toBe(true)
+  })
+
+  it('switches cards view to grid when grid toggle is clicked', async () => {
+    const wrapper = createWrapper()
+    const { viewMode } = useClubsView()
+    await wrapper.find('[data-testid="view-toggle-grid"]').trigger('click')
+
+    expect(viewMode.value).toBe('grid')
+    expect(wrapper.find('[data-testid="view-toggle-grid"]').classes()).toContain('active')
+  })
+
+  it('switches cards view to list when list toggle is clicked', async () => {
+    const wrapper = createWrapper()
+    const { viewMode } = useClubsView()
+    viewMode.value = 'grid'
+    await wrapper.find('[data-testid="view-toggle-list"]').trigger('click')
+
+    expect(viewMode.value).toBe('list')
+    expect(wrapper.find('[data-testid="view-toggle-list"]').classes()).toContain('active')
   })
 })

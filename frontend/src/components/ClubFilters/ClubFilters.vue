@@ -3,11 +3,13 @@ import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
+import { useClubsView } from '@/composables/useClubsView'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const clubsStore = useClubsStore()
+const { viewMode } = useClubsView()
 
 const searchQuery = ref('')
 const activeFilter = ref<'all' | 'member'>('all')
@@ -87,22 +89,57 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
 
 <template>
   <div class="filters-section">
-    <div class="search-bar">
-      <input
-        ref="searchInput"
-        v-model="searchQuery"
-        type="text"
-        placeholder="Найти книжный клуб"
-        class="search-input"
-        @keydown="handleSearchKeydown"
-      />
-      <BaseButton variant="primary" class="search-btn" @click="handleSearch">
-        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-        </svg>
-        <span class="search-btn-text">Найти</span>
-      </BaseButton>
+    <div class="search-row">
+      <div class="search-bar">
+        <input
+          ref="searchInput"
+          v-model="searchQuery"
+          type="text"
+          placeholder="Найти книжный клуб"
+          class="search-input"
+          @keydown="handleSearchKeydown"
+        />
+        <BaseButton variant="primary" class="search-btn" aria-label="Найти" @click="handleSearch">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+        </BaseButton>
+      </div>
+
+      <div class="view-toggle" role="group" aria-label="Вид карточек">
+        <button
+          type="button"
+          class="view-toggle-btn"
+          :class="{ active: viewMode === 'grid' }"
+          aria-label="Блоки"
+          :aria-pressed="viewMode === 'grid'"
+          data-testid="view-toggle-grid"
+          @click="viewMode = 'grid'"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="7" height="7" rx="2" />
+            <rect x="14" y="3" width="7" height="7" rx="2" />
+            <rect x="3" y="14" width="7" height="7" rx="2" />
+            <rect x="14" y="14" width="7" height="7" rx="2" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="view-toggle-btn"
+          :class="{ active: viewMode === 'list' }"
+          aria-label="Длинные карточки"
+          :aria-pressed="viewMode === 'list'"
+          data-testid="view-toggle-list"
+          @click="viewMode = 'list'"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="4" width="18" height="4" rx="2" />
+            <rect x="3" y="10" width="18" height="4" rx="2" />
+            <rect x="3" y="16" width="18" height="4" rx="2" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div ref="filterDropdownRef" class="filter-tabs">
@@ -154,17 +191,24 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
     top: 0;
     z-index: 30;
     padding-top: 12px;
-    padding-bottom: 12px;
     margin-top: -12px;
     background: var(--color-bg);
   }
 }
 
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
-  width: 100%;
-  max-width: 704px;
+  flex: 1;
+  min-width: 0;
   background: var(--color-surface);
   border-radius: 30px;
   padding: 8px 10px 8px 24px;
@@ -189,15 +233,49 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
 }
 
 .search-btn {
+  width: 48px;
   height: 48px;
-  padding: 0 24px;
+  padding: 0;
   border-radius: 30px;
-  font-size: 20px;
   flex-shrink: 0;
 }
 
 .search-icon {
-  display: none;
+  display: block;
+}
+
+.view-toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: var(--color-surface);
+  border-radius: 30px;
+}
+
+.view-toggle-btn {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 30px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.view-toggle-btn:hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.view-toggle-btn.active {
+  background: var(--color-brand);
+  color: #FFFFFF;
 }
 
 .filter-tabs {
@@ -275,7 +353,12 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
 }
 
 @media (max-width: 768px) {
+  .view-toggle {
+    display: none;
+  }
+
   .search-bar {
+    width: 100%;
     padding: 6px 6px 6px 16px;
     gap: 6px;
   }
@@ -285,16 +368,20 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   }
 
   .search-btn {
+    width: 40px;
     height: 40px;
-    padding: 0 14px;
+    border-radius: 30px;
   }
 
-  .search-btn-text {
-    display: none;
+  .view-toggle {
+    gap: 2px;
+    padding: 6px;
   }
 
-  .search-icon {
-    display: block;
+  .view-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 30px;
   }
 
   .filter-tabs {
@@ -398,11 +485,23 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   }
 
   .search-btn {
+    width: 34px;
     height: 34px;
-    padding: 0 10px;
+    border-radius: 30px;
   }
 
   .search-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .view-toggle-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 30px;
+  }
+
+  .view-toggle-btn svg {
     width: 18px;
     height: 18px;
   }
