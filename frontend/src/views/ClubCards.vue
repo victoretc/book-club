@@ -400,7 +400,7 @@ const memberInitials = (club: Club) => {
 
 @media (min-width: 768px) {
   .club-card--grid {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     height: 100%;
     border-radius: 24px;
     padding: 20px;
@@ -601,7 +601,7 @@ const memberInitials = (club: Club) => {
 
 @media (min-width: 768px) {
   .skeleton-card--grid {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     height: 100%;
     border-radius: 24px;
     padding: 20px;
