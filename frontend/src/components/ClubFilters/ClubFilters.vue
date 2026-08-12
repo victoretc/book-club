@@ -192,7 +192,20 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
     z-index: 30;
     padding-top: 12px;
     margin-top: -12px;
-    background: var(--color-bg);
+    background: rgba(242, 242, 244, 0.6);
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  }
+
+  .filters-section::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -32px;
+    height: 32px;
+    background: linear-gradient(to bottom, rgba(242, 242, 244, 0.85), rgba(242, 242, 244, 0));
+    pointer-events: none;
   }
 }
 
