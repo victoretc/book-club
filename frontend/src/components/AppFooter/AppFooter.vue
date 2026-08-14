@@ -19,7 +19,7 @@ const legalLinks = [
             Читальная
           </router-link>
           <p class="footer-tagline">
-            Книжные клубы для тех, кто не хочет читать в одиночестве. Находите единомышленников и обсуждайте любимые книги.
+            Книжные клубы для тех, кто не хочет читать в одиночестве.
           </p>
         </div>
 
@@ -60,13 +60,14 @@ const legalLinks = [
 .footer-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px 24px;
+  padding: 24px 24px 16px;
 }
 
 .footer-main {
   display: flex;
   justify-content: space-between;
   gap: 48px;
+  align-items: center;
 }
 
 .footer-brand {
@@ -83,9 +84,9 @@ const legalLinks = [
 }
 
 .footer-tagline {
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.6;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--color-text-secondary);
 }
 
@@ -106,7 +107,7 @@ const legalLinks = [
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .footer-list {
@@ -115,12 +116,12 @@ const legalLinks = [
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .footer-link {
   display: inline-block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   color: var(--color-text);
@@ -137,8 +138,8 @@ const legalLinks = [
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 40px;
-  padding-top: 20px;
+  margin-top: 24px;
+  padding-top: 12px;
   border-top: 1px solid var(--color-stroke-subtle);
 }
 
@@ -149,17 +150,17 @@ const legalLinks = [
 
 @media (max-width: 768px) {
   .footer-inner {
-    padding: 32px 16px 20px;
+    padding: 20px 16px 16px;
   }
 
   .footer-main {
     flex-direction: column;
-    gap: 32px;
+    gap: 20px;
   }
 
   .footer-nav {
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
   }
 
   .footer-col {
@@ -172,7 +173,7 @@ const legalLinks = [
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-    margin-top: 32px;
+    margin-top: 20px;
   }
 }
 </style>
