@@ -50,10 +50,25 @@ class Category(TimestampedModel):
 
 
 class Club(TimestampedModel):
-    book_title = models.CharField(max_length=255, verbose_name=_("Book Title"), unique=True)
+    class Type(models.TextChoices):
+        BOOK = "book", _("Book Club")
+        AUTHOR = "author", _("Author Club")
+
+    club_type = models.CharField(
+        max_length=16,
+        choices=Type.choices,
+        default=Type.BOOK,
+        verbose_name=_("Club Type"),
+    )
+
+    book_title = models.CharField(max_length=255, verbose_name=_("Book Title"))
     book_authors = models.CharField(max_length=255, verbose_name=_("Book Authors"))
     publication_year = models.IntegerField(verbose_name=_("Publication Year"))
     description = models.TextField(verbose_name=_("Book Description"))
+
+    author_name = models.CharField(max_length=255, blank=True, verbose_name=_("Author/Host Name"))
+    author_bio = models.TextField(blank=True, verbose_name=_("Author/Host Bio"))
+    author_photo = models.ImageField(upload_to="club_authors/", blank=True, null=True, verbose_name=_("Author Photo"))
 
     category = models.ForeignKey(
         Category,
@@ -105,10 +120,21 @@ class ClubRequest(TimestampedModel):
         APPROVED = "approved", _("Approved")
         DECLINED = "declined", _("Declined")
 
+    club_type = models.CharField(
+        max_length=16,
+        choices=Club.Type.choices,
+        default=Club.Type.BOOK,
+        verbose_name=_("Club Type"),
+    )
+
     book_title = models.CharField(max_length=255, verbose_name=_("Book Title"))
     book_authors = models.CharField(max_length=255, verbose_name=_("Book Authors"))
     publication_year = models.IntegerField(verbose_name=_("Publication Year"))
     description = models.TextField(verbose_name=_("Book Description"))
+
+    author_name = models.CharField(max_length=255, blank=True, verbose_name=_("Author/Host Name"))
+    author_bio = models.TextField(blank=True, verbose_name=_("Author/Host Bio"))
+    author_photo = models.ImageField(upload_to="club_authors/", blank=True, null=True, verbose_name=_("Author Photo"))
 
     category = models.ForeignKey(
         Category,

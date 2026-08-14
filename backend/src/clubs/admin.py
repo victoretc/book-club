@@ -35,13 +35,15 @@ class ClubAdmin(ModelAdmin):
         "book_title",
         "book_authors",
         "publication_year",
+        "club_type",
+        "author_name",
         "member_count",
         "get_created",
         "get_modified",
     )
 
-    list_filter = ("created",)
-    search_fields = ("book_title", "book_authors", "owner__username", "owner__email")
+    list_filter = ("created", "club_type")
+    search_fields = ("book_title", "book_authors", "author_name", "owner__username", "owner__email")
     raw_id_fields = ("owner",)
     readonly_fields = ("created", "modified")
     list_per_page = 25
@@ -76,8 +78,8 @@ class ClubRequestAdmin(ModelAdmin):
         "get_created",
     )
 
-    list_filter = ("status",)
-    search_fields = ("book_title", "book_authors", "requester__username", "requester__email")
+    list_filter = ("status", "club_type")
+    search_fields = ("book_title", "book_authors", "author_name", "requester__username", "requester__email")
     raw_id_fields = ("requester",)
     readonly_fields = ("requester", "created", "modified")
     list_per_page = 25
@@ -87,11 +89,22 @@ class ClubRequestAdmin(ModelAdmin):
             None,
             {
                 "fields": (
+                    "club_type",
                     "book_title",
                     "book_authors",
                     "publication_year",
                     "description",
                     "requester",
+                )
+            },
+        ),
+        (
+            _("Author/Host"),
+            {
+                "fields": (
+                    "author_name",
+                    "author_bio",
+                    "author_photo",
                 )
             },
         ),
@@ -131,10 +144,15 @@ class ClubRequestAdmin(ModelAdmin):
     def _approve(self, request: ClubRequest) -> None:
         club, _created = Club.objects.get_or_create(
             book_title=request.book_title,
+            club_type=request.club_type,
             defaults={
+                "club_type": request.club_type,
                 "book_authors": request.book_authors,
                 "publication_year": request.publication_year,
                 "description": request.description,
+                "author_name": request.author_name,
+                "author_bio": request.author_bio,
+                "author_photo": request.author_photo,
                 "category": request.category,
                 "telegram_chat_link": request.telegram_chat_link,
                 "max_chat_link": request.max_chat_link,

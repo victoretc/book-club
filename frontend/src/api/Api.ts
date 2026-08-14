@@ -21,8 +21,22 @@ export enum StatusEnum {
   Declined = "declined",
 }
 
+/**
+ * * `book` - Book Club
+ * * `author` - Author Club
+ */
+export enum ClubTypeEnum {
+  Book = "book",
+  Author = "author",
+}
+
 export interface BookClubRequest {
   id: number;
+  /**
+   * * `book` - Book Club
+   * * `author` - Author Club
+   */
+  clubType?: ClubTypeEnum;
   /** @maxLength 255 */
   bookTitle: string;
   /** @maxLength 255 */
@@ -34,6 +48,15 @@ export interface BookClubRequest {
   publicationYear: number;
   /** Book Description */
   description: string;
+  /**
+   * Author/Host Name
+   * @maxLength 255
+   */
+  authorName?: string;
+  /** Author/Host Bio */
+  authorBio?: string;
+  /** @format uri */
+  authorPhoto?: string | null;
   category?: number | null;
   categoryName: string | null;
   status: StatusEnum;
@@ -63,6 +86,11 @@ export interface BookClubRequest {
 
 export interface BookClubRequestRequest {
   /**
+   * * `book` - Book Club
+   * * `author` - Author Club
+   */
+  clubType?: ClubTypeEnum;
+  /**
    * @minLength 1
    * @maxLength 255
    */
@@ -82,6 +110,15 @@ export interface BookClubRequestRequest {
    * @minLength 1
    */
   description: string;
+  /**
+   * Author/Host Name
+   * @maxLength 255
+   */
+  authorName?: string;
+  /** Author/Host Bio */
+  authorBio?: string;
+  /** @format binary */
+  authorPhoto?: File | null;
   category?: number | null;
 }
 
@@ -143,6 +180,11 @@ export interface Category {
 
 export interface Club {
   id: number;
+  /**
+   * * `book` - Book Club
+   * * `author` - Author Club
+   */
+  clubType?: ClubTypeEnum;
   /** @maxLength 255 */
   bookTitle: string;
   /** @maxLength 255 */
@@ -154,6 +196,15 @@ export interface Club {
   publicationYear: number;
   /** Book Description */
   description: string;
+  /**
+   * Author/Host Name
+   * @maxLength 255
+   */
+  authorName?: string;
+  /** Author/Host Bio */
+  authorBio?: string;
+  /** @format uri */
+  authorPhoto?: string | null;
   category?: number | null;
   categoryName: string | null;
   /**
@@ -185,6 +236,11 @@ export interface Club {
 
 export interface ClubRequest {
   /**
+   * * `book` - Book Club
+   * * `author` - Author Club
+   */
+  clubType?: ClubTypeEnum;
+  /**
    * @minLength 1
    * @maxLength 255
    */
@@ -204,6 +260,15 @@ export interface ClubRequest {
    * @minLength 1
    */
   description: string;
+  /**
+   * Author/Host Name
+   * @maxLength 255
+   */
+  authorName?: string;
+  /** Author/Host Bio */
+  authorBio?: string;
+  /** @format binary */
+  authorPhoto?: File | null;
   category?: number | null;
   /**
    * Link on Telegram chat
@@ -345,6 +410,11 @@ export interface PatchedBookReviewRequest {
 
 export interface PatchedClubRequest {
   /**
+   * * `book` - Book Club
+   * * `author` - Author Club
+   */
+  clubType?: ClubTypeEnum;
+  /**
    * @minLength 1
    * @maxLength 255
    */
@@ -364,6 +434,15 @@ export interface PatchedClubRequest {
    * @minLength 1
    */
   description?: string;
+  /**
+   * Author/Host Name
+   * @maxLength 255
+   */
+  authorName?: string;
+  /** Author/Host Bio */
+  authorBio?: string;
+  /** @format binary */
+  authorPhoto?: File | null;
   category?: number | null;
   /**
    * Link on Telegram chat
@@ -985,6 +1064,7 @@ export class Api<
     clubsList: (
       query?: {
         category?: number;
+        club_type?: string;
         membership?: string;
         /** A page number within the paginated result set. */
         page?: number;

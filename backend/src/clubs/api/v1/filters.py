@@ -24,6 +24,7 @@ class ClubFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method="filter_search")
     membership = django_filters.CharFilter(method="filter_by_membership")
     category = django_filters.NumberFilter(method="filter_by_category")
+    club_type = django_filters.CharFilter(field_name="club_type")
 
     class Meta:
         model = Club
@@ -34,7 +35,7 @@ class ClubFilter(django_filters.FilterSet):
             return queryset
 
         return queryset.annotate(
-            search=SearchVector("book_title", config="russian"),
+            search=SearchVector("book_title", "author_name", config="russian"),
         ).filter(search=SearchQuery(value, config="russian"))
 
     def filter_by_membership(self, queryset: QuerySet, name: str, value: str) -> QuerySet:

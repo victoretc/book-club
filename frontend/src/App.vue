@@ -11,10 +11,10 @@ const route = useRoute()
 <template>
   <div class="app-layout">
     <AppHeader v-if="!route.meta.hideChrome" />
-    <main>
+    <main :class="{ 'main--full-bleed': route.meta.fullBleed }">
       <router-view />
     </main>
-    <AppFooter v-if="!route.meta.hideChrome" />
+    <AppFooter v-if="!route.meta.hideChrome && !route.meta.hideFooter" />
     <ToastNotification />
     <CookieConsent />
   </div>
@@ -50,4 +50,10 @@ main {
     padding: 16px 12px 32px;
   }
 }
+
+.main--full-bleed {
+  padding: 0;
+  max-width: none;
+}
+
 </style>

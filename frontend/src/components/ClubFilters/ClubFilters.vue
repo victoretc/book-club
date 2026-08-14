@@ -1,43 +1,37 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
 import { useClubsView } from '@/composables/useClubsView'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
+import type { ClubTypeEnum } from '@/api/Api'
 
-const router = useRouter()
-const authStore = useAuthStore()
 const clubsStore = useClubsStore()
 const { viewMode } = useClubsView()
 
 const searchQuery = ref('')
-const activeFilter = ref<'all' | 'member'>('all')
+const activeType = ref<ClubTypeEnum>('book')
 const searchInput = ref<HTMLInputElement | null>(null)
 const mounted = ref(false)
-const showFilterDropdown = ref(false)
-const filterDropdownRef = ref<HTMLDivElement | null>(null)
 
-const filters = ['all', 'member'] as const
+const typeFilters = ['book', 'author'] as const
 
-const filterLabels: Record<string, string> = {
-  all: 'Все клубы',
-  member: 'Участвую',
+const typeLabels: Record<string, string> = {
+  book: 'По книге',
+  author: 'Авторские',
 }
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 watch(
-  () => clubsStore.activeFilter,
+  () => clubsStore.activeType,
   (val) => {
-    if (val) activeFilter.value = val
+    activeType.value = val ?? 'book'
   },
   { immediate: true },
 )
 
 onMounted(() => {
   mounted.value = true
-  document.addEventListener('click', handleOutsideClick)
 })
 
 const doSearch = (query: string) => {
@@ -64,27 +58,11 @@ const handleSearchKeydown = (e: KeyboardEvent) => {
   }
 }
 
-const applyFilter = (filter: 'all' | 'member') => {
-  if (!authStore.isAuthenticated && filter === 'member') {
-    router.push('/signin')
-    return
-  }
-  activeFilter.value = filter
-  clubsStore.filterByMembership(filter)
-  showFilterDropdown.value = false
+const applyTypeFilter = (type: 'book' | 'author') => {
+  if (activeType.value === type) return
+  activeType.value = type
+  clubsStore.filterByType(type)
 }
-
-const toggleFilterDropdown = () => {
-  showFilterDropdown.value = !showFilterDropdown.value
-}
-
-const handleOutsideClick = (e: MouseEvent) => {
-  if (filterDropdownRef.value && !filterDropdownRef.value.contains(e.target as Node)) {
-    showFilterDropdown.value = false
-  }
-}
-
-const filterLabel = (f: 'all' | 'member') => filterLabels[f]
 </script>
 
 <template>
@@ -142,35 +120,32 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
       </div>
     </div>
 
-    <div ref="filterDropdownRef" class="filter-tabs">
-      <div class="filter-current" @click="toggleFilterDropdown">
-        <span class="filter-current-label">{{ filterLabel(activeFilter) }}</span>
-        <svg class="filter-chevron" :class="{ open: showFilterDropdown }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
-      <div v-if="showFilterDropdown" class="filter-options">
+        <div class="right-filters">
+      <div class="type-tabs" role="group" aria-label="Тип клуба" data-testid="club-type-tabs">
         <button
-          v-for="f in filters"
-          :key="f"
-          @click="applyFilter(f)"
-          :class="{ active: activeFilter === f }"
-          class="filter-tab filter-tab--membership"
+          v-for="t in typeFilters"
+          :key="t"
+          type="button"
+          class="type-tab"
+          :class="{ active: activeType === t, 'active-pop': activeType === t && mounted }"
+          :aria-pressed="activeType === t"
+          data-testid="club-type-tab"
+          :data-type="t"
+          @click="applyTypeFilter(t)"
         >
-          {{ filterLabel(f) }}
+          {{ typeLabels[t] }}
         </button>
       </div>
-      <div class="filter-options-desktop">
-        <button
-          v-for="f in filters"
-          :key="f"
-          @click="applyFilter(f)"
-          :class="{ active: activeFilter === f, 'active-pop': activeFilter === f && mounted }"
-          class="filter-tab filter-tab--membership"
-        >
-          {{ filterLabel(f) }}
-        </button>
-      </div>
+
+      <label class="member-checkbox">
+        <input type="checkbox" class="member-checkbox-input" :checked="activeFilter === 'member'" @change="handleMemberToggle" />
+        <span class="member-checkbox-box">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </span>
+        <span class="member-checkbox-label">Участвую</span>
+      </label>
     </div>
   </div>
 </template>
@@ -181,8 +156,114 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   display: grid;
   grid-template-columns: minmax(0, 704px) 300px;
   justify-content: center;
-  align-items: stretch;
+  align-items: start;
   gap: 16px;
+}
+
+.right-filters {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.type-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--color-surface);
+  border-radius: 30px;
+  width: 100%;
+  height: 64px;
+  box-sizing: border-box;
+}
+
+.type-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 30px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.21;
+  color: var(--color-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.type-tab-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.type-tab.active {
+  background: var(--color-brand);
+  color: #FFFFFF;
+}
+
+.type-tab:not(.active):hover {
+  background: var(--color-brand-soft);
+}
+
+.type-tab.active-pop {
+  animation: active-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.member-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.member-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.member-checkbox-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--color-text-secondary);
+  color: transparent;
+  background: var(--color-surface);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.member-checkbox-input:checked + .member-checkbox-box {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #FFFFFF;
+}
+
+.member-checkbox-input:focus-visible + .member-checkbox-box {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.member-checkbox-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text);
+  white-space: nowrap;
 }
 
 @media (min-width: 769px) {
@@ -289,63 +370,10 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   color: #FFFFFF;
 }
 
-.filter-tabs {
-  position: relative;
-  display: flex;
-  gap: 10px;
-  padding: 8px 10px;
-  background: var(--color-surface);
-  border-radius: 30px;
-  width: 100%;
-}
-
-.filter-current {
-  display: none;
-}
-
-.filter-options {
-  display: none;
-}
-
-.filter-options-desktop {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-.filter-tab {
-  flex: 1;
-  padding: 10px 20px;
-  background: transparent;
-  border: none;
-  border-radius: 30px;
-  font-family: var(--font-body);
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 1.21;
-  color: var(--color-text);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.25s ease, color 0.25s ease;
-}
-
-.filter-tab.active {
-  background: var(--color-brand);
-  color: #FFFFFF;
-}
-
-.filter-tab:not(.active):hover {
-  background: var(--color-brand-soft);
-}
-
 @keyframes active-pop {
   0% { transform: scale(1); }
   40% { transform: scale(1.06); }
   100% { transform: scale(1); }
-}
-
-.filter-tab.active-pop {
-  animation: active-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (max-width: 900px) {
@@ -355,10 +383,6 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   }
 
   .search-bar {
-    width: 100%;
-  }
-
-  .filter-tabs {
     width: 100%;
   }
 }
@@ -393,91 +417,6 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
     width: 40px;
     height: 40px;
     border-radius: 30px;
-  }
-
-  .filter-tabs {
-    width: 100%;
-    padding: 0;
-    background: none;
-    border-radius: 0;
-    gap: 0;
-  }
-
-  .filter-current {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 16px;
-    background: var(--color-surface);
-    border-radius: 30px;
-    cursor: pointer;
-    gap: 8px;
-  }
-
-  .filter-current-label {
-    font-family: var(--font-body);
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--color-text);
-  }
-
-  .filter-chevron {
-    flex-shrink: 0;
-    color: var(--color-text-secondary);
-    transition: transform 0.2s;
-  }
-
-  .filter-chevron.open {
-    transform: rotate(180deg);
-  }
-
-  .filter-options {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    background: var(--color-surface);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-    z-index: 50;
-  }
-
-  .filter-options-desktop {
-    display: none;
-  }
-
-  .filter-tab--membership {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 0;
-    font-size: 15px;
-    text-align: left;
-    background: transparent;
-    color: var(--color-text);
-    border: none;
-    border-bottom: 1px solid var(--color-stroke-subtle);
-    transition: background 0.15s, color 0.15s;
-  }
-
-  .filter-tab--membership:last-child {
-    border-bottom: none;
-  }
-
-  .filter-tab--membership.active {
-    background: var(--color-brand-soft);
-    color: var(--color-brand);
-  }
-
-  .filter-tab--membership:not(.active):hover {
-    background: var(--color-brand-soft);
-  }
-
-  .filter-tab--membership.active-pop {
-    animation: none;
   }
 }
 
@@ -515,19 +454,6 @@ const filterLabel = (f: 'all' | 'member') => filterLabels[f]
   .view-toggle-btn svg {
     width: 18px;
     height: 18px;
-  }
-
-  .filter-current {
-    padding: 8px 14px;
-  }
-
-  .filter-current-label {
-    font-size: 14px;
-  }
-
-  .filter-tab {
-    padding: 10px 14px;
-    font-size: 14px;
   }
 }
 </style>

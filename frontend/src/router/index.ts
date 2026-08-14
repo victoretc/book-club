@@ -8,7 +8,7 @@ const router = createRouter({
       path: '/signin',
       name: 'signin',
       component: () => import('@/views/SignIn.vue'),
-      meta: { title: 'Вход' },
+      meta: { title: 'Вход', hideFooter: true },
     },
     {
       path: '/clubs/create',
@@ -79,6 +79,8 @@ const router = createRouter({
       component: () => import('@/views/Landing.vue'),
       meta: {
         title: 'Читальная — книжные клубы',
+        fullBleed: true,
+        overlayHeader: true,
       },
     },
     {

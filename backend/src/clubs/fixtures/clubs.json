@@ -168,5 +168,152 @@
       "created": "2026-01-01T12:00:00Z",
       "modified": null
     }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 11,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Тестирование программного обеспечения. Базовый курс",
+      "book_authors": "Святослав Куликов",
+      "publication_year": 2015,
+      "description": "Сообщество вокруг эксперта по QA: разборы техник тест-дизайна, разборы домашних заданий и живое общение с автором курса.",
+      "author_name": "Святослав Куликов",
+      "author_bio": "Ведущий эксперт по тестированию ПО в рунете, автор учебного курса «Тестирование программного обеспечения» и преподаватель-практик, консультирующий команды по всему СНГ.",
+      "author_photo": "",
+      "category": 11,
+      "telegram_chat_link": "https://t.me/kulikov_qa_club",
+      "max_chat_link": "",
+      "owner": 1,
+      "members": [1, 3],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 12,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Чистая архитектура",
+      "book_authors": "Роберт Мартин",
+      "publication_year": 2017,
+      "description": "Клуб поклонников идей Дяди Боба: обсуждение принципов SOLID, практик чистого кода и прикладных примеров из реальных проектов.",
+      "author_name": "Роберт Мартин (Дядя Боб)",
+      "author_bio": "Легендарный инженер-программист, автор книг «Чистый код», «Чистая архитектура» и «Идеальный программист», один из авторов манифеста Agile.",
+      "author_photo": "",
+      "category": 13,
+      "telegram_chat_link": "https://t.me/unclebob_club",
+      "max_chat_link": "",
+      "owner": 2,
+      "members": [2, 3],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 13,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Рефакторинг. Улучшение существующего кода",
+      "book_authors": "Мартин Фаулер",
+      "publication_year": 2018,
+      "description": "Сообщество о рефакторинге и проектировании: разбор каталога приёмов Фаулера, код-ревью и обсуждение архитектурных решений.",
+      "author_name": "Мартин Фаулер",
+      "author_bio": "Главный научный сотрудник Thoughtworks, автор эталонных книг по рефакторингу, архитектуре и шаблонам проектирования, влиятельный голос в разработке ПО.",
+      "author_photo": "",
+      "category": 13,
+      "telegram_chat_link": "https://t.me/fowler_club",
+      "max_chat_link": "",
+      "owner": 3,
+      "members": [1, 3],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 14,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Пять пороков команды",
+      "book_authors": "Патрик Ленсиони",
+      "publication_year": 2002,
+      "description": "Клуб о командной работе и лидерстве: практикумы по моделям Ленсиони, разборы реальных кейсов и управленческих дилемм.",
+      "author_name": "Патрик Ленсиони",
+      "author_bio": "Специалист по командообразованию и организационной культуре, автор мировых бестселлеров «Пять пороков команды» и «Пять искушений руководителя».",
+      "author_photo": "",
+      "category": 14,
+      "telegram_chat_link": "https://t.me/lencioni_club",
+      "max_chat_link": "",
+      "owner": 1,
+      "members": [1, 2],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 15,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Hire With Your Head",
+      "book_authors": "Лу Адлер",
+      "publication_year": 2007,
+      "description": "Сообщество рекрутеров вокруг методики системного найма: структурированные интервью, оценка кандидатов и разбор кейсов.",
+      "author_name": "Лу Адлер",
+      "author_bio": "Эксперт по найму, консультант компаний из Fortune 500, автор системных методик подбора персонала и ведущий специалист по performance-based hiring.",
+      "author_photo": "",
+      "category": 15,
+      "telegram_chat_link": "https://t.me/adler_hire_club",
+      "max_chat_link": "",
+      "owner": 2,
+      "members": [2],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 16,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Сигнал и шум",
+      "book_authors": "Нейт Сильвер",
+      "publication_year": 2012,
+      "description": "Клуб аналитиков данных: обсуждение методов прогнозирования, работы с данными и того, как отличать сигнал от шума.",
+      "author_name": "Нейт Сильвер",
+      "author_bio": "Статистик и аналитик данных, основатель FiveThirtyEight, автор книг о прогнозировании и роли данных в принятии решений.",
+      "author_photo": "",
+      "category": 16,
+      "telegram_chat_link": "https://t.me/silver_data_club",
+      "max_chat_link": "",
+      "owner": 3,
+      "members": [3],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
+  },
+  {
+    "model": "clubs.club",
+    "pk": 17,
+    "fields": {
+      "club_type": "author",
+      "book_title": "Переговоры без поражения",
+      "book_authors": "Роджер Фишер, Уильям Юри",
+      "publication_year": 1981,
+      "description": "Практический клуб по ведению переговоров: тренировки, разбор кейсов и живое общение с экспертом по Гарвардскому методу.",
+      "author_name": "Уильям Юри",
+      "author_bio": "Соавтор Гарвардского метода переговоров, международный консультант по разрешению конфликтов, автор книг о сотрудничестве и ведении сложных диалогов.",
+      "author_photo": "",
+      "category": 23,
+      "telegram_chat_link": "https://t.me/ury_negotiations_club",
+      "max_chat_link": "",
+      "owner": 1,
+      "members": [1, 2, 3],
+      "created": "2026-01-01T12:00:00Z",
+      "modified": null
+    }
   }
 ]

@@ -1,20 +1,33 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import heroDesktop from '@/assets/images/nasa-image.jpg'
+import heroMobile from '@/assets/images/nasa-image-without-human.png'
 
 defineOptions({ name: 'LandingPage' })
 
 const router = useRouter()
 
-const headerHeight = ref(0)
+const headerHeight = ref('0px')
+const isImageLoaded = ref(false)
 
 function updateHeaderHeight() {
-  headerHeight.value = document.querySelector('[data-testid="header"]')?.getBoundingClientRect().height ?? 0
+  const h = document.querySelector('[data-testid="header"]')?.getBoundingClientRect().height ?? 0
+  headerHeight.value = `${h}px`
+}
+
+function heroSrc() {
+  return window.innerWidth >= 1025 ? heroDesktop : heroMobile
 }
 
 onMounted(() => {
   updateHeaderHeight()
   window.addEventListener('resize', updateHeaderHeight)
+  const img = new Image()
+  img.onload = () => {
+    isImageLoaded.value = true
+  }
+  img.src = heroSrc()
 })
 
 onBeforeUnmount(() => {
@@ -25,7 +38,14 @@ const openClubs = () => router.push('/clubs')
 </script>
 
 <template>
-  <div class="landing">
+  <div
+    class="landing"
+    :style="{ '--hero-desktop': `url('${heroDesktop}')`, '--hero-mobile': `url('${heroMobile}')` }"
+  >
+    <div class="landing-bg" aria-hidden="true" data-testid="landing-background">
+      <div class="landing-bg-img" :class="{ 'is-loaded': isImageLoaded }" />
+      <div class="landing-bg-overlay" />
+    </div>
     <section class="hero">
       <h1 class="hero-title">
         Не с кем почитать книгу?
@@ -43,19 +63,64 @@ const openClubs = () => router.push('/clubs')
 
 <style scoped>
 .landing {
-  flex: 1;
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - v-bind(headerHeight));
-  min-height: calc(100dvh - v-bind(headerHeight));
+  align-items: flex-start;
+  justify-content: flex-end;
+  height: calc(100vh - v-bind(headerHeight));
+  height: calc(100dvh - v-bind(headerHeight));
+  padding: 10vh 48px 0 0;
+}
+
+@media (max-width: 768px) {
+  .landing {
+    padding: 10vh 24px 0;
+  }
+}
+
+.landing-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #0d1024;
+}
+
+.landing-bg-img {
+  position: absolute;
+  inset: 0;
+  background: var(--hero-desktop) right center / 120% auto no-repeat;
+  opacity: 0;
+  transition: opacity var(--duration-normal) ease;
+}
+
+@media (orientation: portrait) {
+  .landing-bg-img {
+    background-size: cover;
+  }
+}
+
+@media (max-width: 1024px) {
+  .landing-bg-img {
+    background: var(--hero-mobile) center / cover no-repeat;
+  }
+}
+
+.landing-bg-img.is-loaded {
+  opacity: 1;
+}
+
+.landing-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 10, 24, 0.42) 0%, rgba(8, 10, 24, 0.05) 42%, rgba(8, 10, 24, 0.32) 100%);
 }
 
 .hero {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   max-width: 680px;
   padding: 48px 0;
 }
@@ -66,12 +131,12 @@ const openClubs = () => router.push('/clubs')
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -0.02em;
-  color: var(--color-text);
+  color: #ffffff;
   margin: 0;
 }
 
 .hero-title-accent {
-  color: var(--color-brand);
+  color: #b3b6ff;
 }
 
 .hero-subtitle {
@@ -80,7 +145,7 @@ const openClubs = () => router.push('/clubs')
   font-family: var(--font-body);
   font-size: 19px;
   line-height: 1.6;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .hero-rule {

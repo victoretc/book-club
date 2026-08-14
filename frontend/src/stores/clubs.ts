@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { api } from '@/api'
+import { ContentType } from '@/api/Api'
 import { useAuthStore } from '@/stores/auth'
 import { showToast } from '@/stores/toast'
-import type { BookClubRequestRequest, Club, PatchedClubRequest } from '@/api/Api'
+import type { BookClubRequestRequest, Club, ClubTypeEnum, PatchedClubRequest } from '@/api/Api'
 
 interface ClubsListParams {
   category?: number
@@ -10,6 +11,7 @@ interface ClubsListParams {
   page?: number
   page_size?: number
   search?: string
+  club_type?: string
 }
 
 interface ClubsState {
@@ -18,6 +20,7 @@ interface ClubsState {
   activeFilter: 'member' | 'all' | null
   activeSearch: string | null
   activeCategory: number | null
+  activeType: ClubTypeEnum | null
   pagination: {
     count: number
     next: string | null
@@ -34,6 +37,7 @@ export const useClubsStore = defineStore('clubs', {
     activeFilter: null,
     activeSearch: null,
     activeCategory: null,
+    activeType: null,
     pagination: {
       count: 0,
       next: null,
@@ -74,6 +78,9 @@ export const useClubsStore = defineStore('clubs', {
       if (this.activeCategory) {
         return this.filterByCategory(this.activeCategory, page, pageSize)
       }
+      if (this.activeType) {
+        return this.filterByType(this.activeType, page, pageSize)
+      }
       return this.fetchClubs(page, pageSize)
     },
 
@@ -81,6 +88,7 @@ export const useClubsStore = defineStore('clubs', {
       this.activeFilter = 'all'
       this.activeSearch = null
       this.activeCategory = null
+      this.activeType = null
       await this._fetchClubsWithParams(
         { page, page_size: pageSize },
         'Не удалось загрузить список клубов',
@@ -91,6 +99,7 @@ export const useClubsStore = defineStore('clubs', {
       this.activeSearch = query
       this.activeFilter = null
       this.activeCategory = null
+      this.activeType = null
       await this._fetchClubsWithParams(
         { search: query, page, page_size: pageSize },
         'Ошибка при поиске клубов',
@@ -106,6 +115,7 @@ export const useClubsStore = defineStore('clubs', {
       this.activeSearch = null
       const params: ClubsListParams = { page, page_size: pageSize }
       if (this.activeCategory) params.category = this.activeCategory
+      if (this.activeType) params.club_type = this.activeType
       if (type !== 'all') params.membership = type
       await this._fetchClubsWithParams(params, 'Ошибка при фильтрации клубов')
     },
@@ -117,7 +127,19 @@ export const useClubsStore = defineStore('clubs', {
       if (this.activeFilter && this.activeFilter !== 'all') {
         params.membership = this.activeFilter
       }
+      if (this.activeType) params.club_type = this.activeType
       await this._fetchClubsWithParams(params, 'Ошибка при фильтрации по категории')
+    },
+
+    async filterByType(type: ClubTypeEnum, page: number = 1, pageSize: number = 10) {
+      this.activeType = type
+      this.activeSearch = null
+      const params: ClubsListParams = { club_type: type, page, page_size: pageSize }
+      if (this.activeCategory) params.category = this.activeCategory
+      if (this.activeFilter && this.activeFilter !== 'all') {
+        params.membership = this.activeFilter
+      }
+      await this._fetchClubsWithParams(params, 'Ошибка при фильтрации по типу клуба')
     },
 
     async nextPage() {
@@ -170,9 +192,21 @@ export const useClubsStore = defineStore('clubs', {
       return authStore.user ? Number(club.owner) === Number(authStore.user.id) : false
     },
 
-    async createClubRequest(data: BookClubRequestRequest) {
+    async createClubRequest(data: BookClubRequestRequest, photo?: File | null) {
       this.isLoading = true
       try {
+        if (photo) {
+          const formData = new FormData()
+          Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) formData.append(key, String(value))
+          })
+          formData.append('author_photo', photo)
+          const response = await api.api.clubsClubRequestsCreate(
+            formData as unknown as BookClubRequestRequest,
+            { type: ContentType.FormData },
+          )
+          return response.data
+        }
         const response = await api.api.clubsClubRequestsCreate(data)
         return response.data
       } catch (error) {
@@ -183,9 +217,22 @@ export const useClubsStore = defineStore('clubs', {
       }
     },
 
-    async updateClub(clubId: number, data: Partial<Club>) {
+    async updateClub(clubId: number, data: Partial<Club>, photo?: File | null) {
       this.isLoading = true
       try {
+        if (photo) {
+          const formData = new FormData()
+          Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) formData.append(key, String(value))
+          })
+          formData.append('author_photo', photo)
+          const response = await api.api.clubsPartialUpdate(
+            clubId,
+            formData as unknown as PatchedClubRequest,
+            { type: ContentType.FormData },
+          )
+          return response.data
+        }
         const response = await api.api.clubsPartialUpdate(clubId, data as PatchedClubRequest)
         return response.data
       } catch (error) {

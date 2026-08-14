@@ -10,6 +10,7 @@ import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import BreadcrumbsNav from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import type { Crumb } from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import type { Club } from '@/api/Api'
+import { ClubTypeEnum } from '@/api/Api'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,7 +32,7 @@ const breadcrumbTrail = computed<Crumb[]>(() => {
         trail.push({ label: c.name, to: `/categories/${c.slug}` })
       })
     }
-    trail.push({ label: club.value.bookTitle })
+    trail.push({ label: breadcrumbLabel.value })
   }
   return trail
 })
@@ -42,6 +43,20 @@ const isMember = computed(() => {
 
 const isOwner = computed(() => {
   return club.value ? clubsStore.isCurrentUserOwner(club.value) : false
+})
+
+const isAuthorClub = computed(() => {
+  return club.value?.clubType === ClubTypeEnum.Author
+})
+
+const breadcrumbLabel = computed(() => {
+  if (!club.value) return ''
+  return isAuthorClub.value && club.value.authorName ? club.value.authorName : club.value.bookTitle
+})
+
+const authorInitial = computed(() => {
+  const name = club.value?.authorName?.trim()
+  return name ? name[0].toUpperCase() : '?'
 })
 
 function openTelegram() {
@@ -117,16 +132,37 @@ onMounted(async () => {
     </div>
 
     <div v-else-if="club" class="detail-card" data-testid="club-details-card">
-      <div class="card-head">
+      <div v-if="isAuthorClub" class="card-head author-head">
+        <img
+          v-if="club.authorPhoto"
+          :src="club.authorPhoto"
+          :alt="club.authorName ?? ''"
+          class="author-photo"
+        />
+        <span v-else class="author-photo author-photo--placeholder">{{ authorInitial }}</span>
+        <div class="author-head-info">
+          <span class="club-type-badge">Авторский клуб</span>
+          <h1 class="card-title" data-testid="club-details-author-name">{{ club.authorName }}</h1>
+        </div>
+      </div>
+
+      <div v-else class="card-head">
         <h1 class="card-title" data-testid="club-details-book-title">{{ club.bookTitle }}</h1>
         <span class="year-badge" data-testid="club-details-publication-year">{{ club.publicationYear }}</span>
       </div>
 
-      <p class="card-author" data-testid="club-details-book-author">{{ club.bookAuthors }}</p>
+      <p v-if="!isAuthorClub" class="card-author" data-testid="club-details-book-author">{{ club.bookAuthors }}</p>
 
       <div class="card-divider" />
 
-      <p class="card-desc" data-testid="club-details-description">{{ club.description }}</p>
+      <p v-if="isAuthorClub && club.authorBio" class="card-desc" data-testid="club-details-author-bio">{{ club.authorBio }}</p>
+      <p v-else class="card-desc" data-testid="club-details-description">{{ club.description }}</p>
+
+      <div v-if="isAuthorClub" class="now-reading">
+        Читают сейчас: «{{ club.bookTitle }}»
+        <span v-if="club.bookAuthors"> — {{ club.bookAuthors }}</span>
+        <span v-if="club.publicationYear"> ({{ club.publicationYear }})</span>
+      </div>
 
       <div class="card-stats" data-testid="club-details-stats">
         <span class="stat">
@@ -329,6 +365,60 @@ onMounted(async () => {
   margin: 0;
 }
 
+.author-head {
+  align-items: center;
+}
+
+.author-photo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--color-brand-soft);
+}
+
+.author-photo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.author-head-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.club-type-badge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  background: var(--color-brand-soft);
+  border-radius: 30px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-brand);
+  white-space: nowrap;
+}
+
+.now-reading {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  padding: 12px 16px;
+  background: var(--color-brand-soft);
+  border-radius: 16px;
+}
+
 .card-divider {
   height: 1px;
   background: var(--color-stroke-subtle);
@@ -381,6 +471,16 @@ onMounted(async () => {
   .card-head {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .author-head {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .author-photo {
+    width: 64px;
+    height: 64px;
   }
 
   .card-actions {

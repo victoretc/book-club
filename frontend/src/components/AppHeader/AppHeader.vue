@@ -48,7 +48,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="header" data-testid="header">
+  <header class="header" data-testid="header" :class="{ 'header--overlay': route.meta.overlayHeader }">
     <div class="header-inner">
       <router-link to="/" class="brand" data-testid="logo-link">
         Читальная
@@ -223,6 +223,39 @@ onBeforeUnmount(() => {
 
 .nav-btn.router-link-active {
   color: var(--color-brand);
+}
+
+.header--overlay {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.header--overlay .brand {
+  color: #ffffff;
+}
+
+.header--overlay .nav-btn {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.header--overlay .nav-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.header--overlay .nav-btn.router-link-active {
+  color: #b3b6ff;
+}
+
+.header--overlay .burger-bar {
+  background: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .header--overlay .nav {
+    background: rgba(8, 10, 24, 0.92);
+    border-bottom-color: transparent;
+  }
 }
 
 @media (hover: none) {

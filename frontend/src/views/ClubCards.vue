@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useClubsStore } from '@/stores/clubs'
 import { useCategoriesStore } from '@/stores/categories'
 import type { Club, Member } from '@/api/Api'
+import { ClubTypeEnum } from '@/api/Api'
 import ClubFilters from '@/components/ClubFilters/ClubFilters.vue'
 import CategorySidebar from '@/components/CategorySidebar/CategorySidebar.vue'
 import PaginationControls from '@/components/PaginationControls/PaginationControls.vue'
@@ -80,6 +81,9 @@ const loadClubsByRoute = async () => {
     if (clubsStore.activeFilter && clubsStore.activeFilter !== 'all') {
       clubsStore.activeCategory = null
       await clubsStore.filterByMembership(clubsStore.activeFilter)
+    } else if (clubsStore.activeType) {
+      clubsStore.activeCategory = null
+      await clubsStore.filterByType(clubsStore.activeType)
     } else {
       await clubsStore.fetchClubs()
     }
@@ -95,6 +99,13 @@ const openCategory = (slug: string) => {
 }
 
 const isMember = (club: Club) => clubsStore.isCurrentUserMember(club)
+
+const isAuthorClub = (club: Club) => club.clubType === ClubTypeEnum.Author
+
+const authorInitial = (club: Club): string => {
+  const name = club.authorName?.trim()
+  return name ? name[0].toUpperCase() : '?'
+}
 
 const openClubPage = (clubId: number) => {
   router.push(`/clubs/${clubId}`)
@@ -190,9 +201,26 @@ const memberInitials = (club: Club) => {
                 <span class="year-badge">{{ club.publicationYear }}</span>
               </div>
 
-              <div class="card-author">{{ club.bookAuthors }}</div>
+              <div v-if="isAuthorClub(club)" class="card-author-club">
+                <img
+                  v-if="club.authorPhoto"
+                  :src="club.authorPhoto"
+                  alt=""
+                  class="author-avatar"
+                />
+                <span v-else class="author-avatar author-avatar--placeholder">{{ authorInitial(club) }}</span>
+                <div class="author-club-info">
+                  <span class="club-type-badge">Авторский клуб</span>
+                  <span class="card-author author-name">{{ club.authorName }}</span>
+                </div>
+              </div>
 
-              <p class="card-desc">{{ club.description }}</p>
+              <p v-if="isAuthorClub(club) && club.authorBio" class="card-desc">{{ club.authorBio }}</p>
+              <p v-else class="card-desc">{{ club.description }}</p>
+
+              <div v-if="isAuthorClub(club)" class="now-reading">
+                Читают сейчас: «{{ club.bookTitle }}» ({{ club.publicationYear }})
+              </div>
 
               <div class="card-footer">
                 <div class="card-members">
@@ -423,6 +451,19 @@ const memberInitials = (club: Club) => {
     text-overflow: ellipsis;
   }
 
+  .club-card--grid .author-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .club-card--grid .author-name {
+    font-size: 16px;
+  }
+
+  .club-card--grid .now-reading {
+    font-size: 12px;
+  }
+
   .club-card--grid .card-desc {
     font-size: 14px;
     line-height: 1.55;
@@ -486,6 +527,68 @@ const memberInitials = (club: Club) => {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.21;
+  color: var(--color-text-secondary);
+}
+
+.card-author-club {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.author-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--color-brand-soft);
+}
+
+.author-avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.author-club-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.club-type-badge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  background: var(--color-brand-soft);
+  border-radius: 30px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-brand);
+  white-space: nowrap;
+}
+
+.author-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now-reading {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
   color: var(--color-text-secondary);
 }
 

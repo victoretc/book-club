@@ -18,10 +18,13 @@ const { mockHandleSubmit } = vi.hoisted(() => ({
     return (e?: Event) => {
       e?.preventDefault?.()
       cb({
+        clubType: 'book',
         bookTitle: 'New Book',
         bookAuthors: 'New Author',
         publicationYear: 2024,
         description: 'New description',
+        authorName: '',
+        authorBio: '',
       })
     }
   }),
@@ -31,6 +34,7 @@ vi.mock('vee-validate', () => ({
   useForm: () => ({
     handleSubmit: mockHandleSubmit,
     setValues: vi.fn(),
+    setFieldValue: vi.fn(),
   }),
   Field: {
     name: 'Field',
@@ -52,6 +56,12 @@ function createWrapper(props: { clubId?: number | null } = {}) {
         BaseButton: {
           template: '<button :class="variant"><slot/></button>',
           props: ['variant', 'loading'],
+        },
+        ClubTypePicker: {
+          name: 'ClubTypePicker',
+          emits: ['select'],
+          template:
+            '<div data-testid="club-type-picker-stub"><button data-testid="pick-book" @click="$emit(\'select\', \'book\')">book</button><button data-testid="pick-author" @click="$emit(\'select\', \'author\')">author</button></div>',
         },
       },
     },
@@ -82,9 +92,15 @@ describe('ClubForm', () => {
     mockHandleSubmit.mockClear()
   })
 
-  it('renders create form title', () => {
+  it('renders club type picker on create', () => {
     const wrapper = createWrapper()
-    expect(wrapper.text()).toContain('Создать клуб')
+    expect(wrapper.find('[data-testid="club-type-picker-stub"]').exists()).toBe(true)
+  })
+
+  it('renders create form title after choosing type', async () => {
+    const wrapper = createWrapper()
+    await wrapper.find('[data-testid="pick-book"]').trigger('click')
+    expect(wrapper.text()).toContain('Создать клуб по книге')
   })
 
   it('renders edit form title when clubId provided', async () => {
@@ -96,9 +112,10 @@ describe('ClubForm', () => {
     expect(wrapper.text()).toContain('Редактирование клуба')
   })
 
-  it('renders all form fields', () => {
+  it('renders all form fields', async () => {
     seedCategories()
     const wrapper = createWrapper()
+    await wrapper.find('[data-testid="pick-book"]').trigger('click')
     expect(wrapper.find('#bookTitle').exists()).toBe(true)
     expect(wrapper.find('#bookAuthors').exists()).toBe(true)
     expect(wrapper.find('#publicationYear').exists()).toBe(true)
@@ -106,11 +123,21 @@ describe('ClubForm', () => {
     expect(wrapper.find('#category').exists()).toBe(true)
   })
 
+  it('shows author fields for author club type', async () => {
+    seedCategories()
+    const wrapper = createWrapper()
+    await wrapper.find('[data-testid="pick-author"]').trigger('click')
+    expect(wrapper.find('#authorName').exists()).toBe(true)
+    expect(wrapper.find('#authorBio').exists()).toBe(true)
+    expect(wrapper.find('#authorPhoto').exists()).toBe(true)
+  })
+
   it('submits create form, creates club request and navigates to clubs', async () => {
     seedCategories()
     const createRequestSpy = vi.spyOn(api.api, 'clubsClubRequestsCreate').mockResolvedValue({ data: { id: 1 } } as unknown as Awaited<ReturnType<typeof api.api.clubsClubRequestsCreate>>)
 
     const wrapper = createWrapper()
+    await wrapper.find('[data-testid="pick-book"]').trigger('click')
 
     await wrapper.find('[data-testid="club-form-category-select"] .custom-select__trigger').trigger('click')
     await wrapper.find('[data-testid="club-form-category-select"] .custom-select__option').trigger('click')
@@ -119,10 +146,13 @@ describe('ClubForm', () => {
     await nextTick()
 
     expect(createRequestSpy).toHaveBeenCalledWith({
+      clubType: 'book',
       bookTitle: 'New Book',
       bookAuthors: 'New Author',
       publicationYear: 2024,
       description: 'New description',
+      authorName: '',
+      authorBio: '',
       category: 1,
     })
     expect(push).toHaveBeenCalledWith({ name: 'clubs' })

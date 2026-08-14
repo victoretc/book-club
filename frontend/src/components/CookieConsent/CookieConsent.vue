@@ -74,7 +74,7 @@ onMounted(() => {
 .cookie {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 24px;
   width: 380px;
   z-index: 90;
 }

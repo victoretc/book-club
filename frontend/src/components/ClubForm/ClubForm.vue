@@ -7,6 +7,8 @@ import { useClubsStore } from '@/stores/clubs'
 import { useCategoriesStore } from '@/stores/categories'
 import { showToast } from '@/stores/toast'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
+import ClubTypePicker from '@/components/ClubForm/ClubTypePicker.vue'
+import { ClubTypeEnum } from '@/api/Api'
 import type { Club } from '@/api/Api'
 import type { BookClubRequestRequest } from '@/api/Api'
 
@@ -26,6 +28,10 @@ const clubsStore = useClubsStore()
 const categoriesStore = useCategoriesStore()
 const isLoading = ref(false)
 const errorMsg = ref('')
+
+const clubType = ref<ClubTypeEnum | null>(null)
+const photoFile = ref<File | null>(null)
+const existingPhoto = ref<string | null>(null)
 
 const parentCategoryId = ref<number | ''>('')
 const subcategoryId = ref<number | ''>('')
@@ -50,15 +56,35 @@ const selectedSubcategoryName = computed(() => {
   return categoriesStore.nameById(subcategoryId.value)
 })
 
+const isAuthorType = computed(() => clubType.value === ClubTypeEnum.Author)
+
+const photoPreview = computed(() => {
+  if (photoFile.value) return URL.createObjectURL(photoFile.value)
+  return existingPhoto.value
+})
+
 const validationSchema = yup.object({
   bookTitle: yup.string().required('Название книги обязательно'),
   bookAuthors: yup.string().required('Автор(ы) книги обязательно'),
   publicationYear: yup.number().typeError('Введите число').required('Год выпуска обязательно'),
   description: yup.string().required('Описание книги обязательно'),
+  authorName: yup.string().when('clubType', {
+    is: ClubTypeEnum.Author,
+    then: (schema) => schema.required('Имя автора/ведущего обязательно'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  authorBio: yup.string().when('clubType', {
+    is: ClubTypeEnum.Author,
+    then: (schema) => schema.required('Описание автора/ведущего обязательно'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 })
 
-const { handleSubmit, setValues } = useForm({
+const { handleSubmit, setValues, setFieldValue } = useForm({
   validationSchema,
+  initialValues: {
+    clubType: '',
+  },
 })
 
 function resolveCategory(): number | '' {
@@ -113,17 +139,35 @@ async function loadClub() {
     const category = categoriesStore.categoryById(club.category)
     parentCategoryId.value = category?.parent ?? club.category ?? ''
     subcategoryId.value = category?.parent != null ? club.category ?? '' : ''
+    clubType.value = club.clubType ?? ClubTypeEnum.Book
+    existingPhoto.value = club.authorPhoto ?? null
+    setFieldValue('clubType', club.clubType ?? ClubTypeEnum.Book)
     setValues({
+      clubType: club.clubType ?? ClubTypeEnum.Book,
       bookTitle: club.bookTitle,
       bookAuthors: club.bookAuthors,
       publicationYear: club.publicationYear,
       description: club.description,
+      authorName: club.authorName ?? '',
+      authorBio: club.authorBio ?? '',
     })
   } catch {
     router.push({ name: 'clubs' })
   } finally {
     isLoading.value = false
   }
+}
+
+function selectType(type: ClubTypeEnum) {
+  clubType.value = type
+  setFieldValue('clubType', type)
+}
+
+function onPhotoChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  photoFile.value = file ?? null
+  if (file) existingPhoto.value = null
 }
 
 onMounted(() => {
@@ -141,12 +185,18 @@ const onSubmit = handleSubmit(async (values) => {
   if (category === '') return
   isLoading.value = true
   errorMsg.value = ''
+  const type = clubType.value ?? ClubTypeEnum.Book
+  const payload = {
+    ...(values as Partial<Club>),
+    clubType: type,
+    category,
+  }
   try {
     if (props.clubId) {
-      await clubsStore.updateClub(props.clubId, { ...(values as Partial<Club>), category })
+      await clubsStore.updateClub(props.clubId, payload, photoFile.value)
       showToast('Клуб успешно обновлен', 'success')
     } else {
-      await clubsStore.createClubRequest({ ...(values as BookClubRequestRequest), category })
+      await clubsStore.createClubRequest({ ...(payload as BookClubRequestRequest) }, photoFile.value)
       showToast('Заявка отправлена. Администратор рассмотрит её в ближайшее время.', 'success')
     }
     emit('submit')
@@ -160,8 +210,19 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <form @submit="onSubmit" class="form-card" data-testid="club-form">
-    <h1 class="form-title" data-testid="club-form-title">{{ clubId ? 'Редактирование клуба' : 'Создать клуб' }}</h1>
+  <ClubTypePicker v-if="!clubId && !clubType" @select="selectType" />
+
+  <form v-else @submit="onSubmit" class="form-card" data-testid="club-form">
+    <h1 class="form-title" data-testid="club-form-title">{{ clubId ? 'Редактирование клуба' : (isAuthorType ? 'Создать авторский клуб' : 'Создать клуб по книге') }}</h1>
+
+    <div v-if="!clubId" class="type-switch">
+      <span class="type-switch-label">
+        {{ isAuthorType ? 'Авторский клуб' : 'Клуб по книге' }}
+      </span>
+      <button type="button" class="type-switch-btn" @click="clubType = null">
+        Сменить тип
+      </button>
+    </div>
 
     <div class="field">
       <label for="bookTitle">Название книги *</label>
@@ -219,6 +280,57 @@ const onSubmit = handleSubmit(async (values) => {
       />
       <ErrorMessage name="description" class="field-error" />
     </div>
+
+    <template v-if="isAuthorType">
+      <div class="author-section">
+        <span class="author-section-title">Об авторе / ведущем</span>
+
+        <div class="field">
+          <label for="authorName">Имя автора / ведущего *</label>
+          <Field
+            id="authorName"
+            name="authorName"
+            type="text"
+            placeholder="Святослав Куликов"
+            :disabled="isLoading"
+            class="input"
+            data-testid="club-form-author-name-input"
+          />
+          <ErrorMessage name="authorName" class="field-error" />
+        </div>
+
+        <div class="field">
+          <label for="authorBio">Биография и о чём клуб *</label>
+          <Field
+            id="authorBio"
+            name="authorBio"
+            as="textarea"
+            rows="4"
+            placeholder="Кто этот человек, почему с ним интересно читать"
+            :disabled="isLoading"
+            class="textarea"
+            data-testid="club-form-author-bio-input"
+          />
+          <ErrorMessage name="authorBio" class="field-error" />
+        </div>
+
+        <div class="field">
+          <label for="authorPhoto">Фото</label>
+          <input
+            id="authorPhoto"
+            type="file"
+            accept="image/*"
+            :disabled="isLoading"
+            class="photo-input"
+            data-testid="club-form-author-photo-input"
+            @change="onPhotoChange"
+          />
+          <div v-if="photoPreview" class="photo-preview">
+            <img :src="photoPreview" alt="Фото автора" class="photo-preview-img" />
+          </div>
+        </div>
+      </div>
+    </template>
 
     <div ref="categoryRef" class="field">
       <label id="category-label" for="category">Категория *</label>
@@ -325,7 +437,7 @@ const onSubmit = handleSubmit(async (values) => {
 
     <div class="form-actions">
       <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading" testId="club-form-submit-button">
-        {{ clubId ? 'Сохранить изменения' : 'Создать клуб' }}
+        {{ clubId ? 'Сохранить изменения' : 'Отправить заявку' }}
       </BaseButton>
       <BaseButton variant="outline" full-width @click="router.push('/clubs')" :disabled="isLoading" testId="club-form-cancel-button">
         Отмена
@@ -354,6 +466,85 @@ const onSubmit = handleSubmit(async (values) => {
 
 .field {
   margin-bottom: 20px;
+}
+
+.type-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  background: var(--color-brand-soft);
+  border-radius: 12px;
+}
+
+.type-switch-label {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.type-switch-btn {
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.type-switch-btn:hover {
+  color: var(--color-brand);
+}
+
+.author-section {
+  border-top: 1px solid var(--color-stroke-subtle);
+  padding-top: 20px;
+  margin-bottom: 4px;
+}
+
+.author-section-title {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: var(--color-text);
+}
+
+.photo-input {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.photo-input::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 30px;
+  background: var(--color-brand-soft);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-brand);
+  cursor: pointer;
+}
+
+.photo-preview {
+  margin-top: 12px;
+}
+
+.photo-preview-img {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .field label {

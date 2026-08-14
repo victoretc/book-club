@@ -37,9 +37,9 @@ describe('ClubFilters', () => {
     expect(wrapper.find('input[placeholder="Найти книжный клуб"]').exists()).toBe(true)
   })
 
-  it('renders filter tabs', () => {
+  it('renders filter checkbox', () => {
     const wrapper = createWrapper()
-    expect(wrapper.text()).toContain('Все клубы')
+    expect(wrapper.find('.member-checkbox-input').exists()).toBe(true)
     expect(wrapper.text()).toContain('Участвую')
     expect(wrapper.text()).not.toContain('Мои клубы')
   })
@@ -51,39 +51,36 @@ describe('ClubFilters', () => {
     expect((input.element as HTMLInputElement).value).toBe('test')
   })
 
-  it('redirects to signin when unauthenticated user clicks member filter', async () => {
+  it('redirects to signin when unauthenticated user checks member filter', async () => {
     const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab--membership')
-    const memberBtn = buttons.find((b) => b.text() === 'Участвую')
-    expect(memberBtn).toBeDefined()
-    await memberBtn!.trigger('click')
+    const checkbox = wrapper.find('.member-checkbox-input')
+    expect(checkbox.exists()).toBe(true)
+    await checkbox.setValue(true)
     expect(push).toHaveBeenCalledWith('/signin')
   })
 
-  it('calls filterByMembership when authenticated user clicks filter', async () => {
+  it('calls filterByMembership when authenticated user checks filter', async () => {
     const authStore = useAuthStore()
     authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } })
     const clubsStore = useClubsStore()
     vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
 
     const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab--membership')
-    const memberBtn = buttons.find((b) => b.text() === 'Участвую')
-    await memberBtn!.trigger('click')
+    const checkbox = wrapper.find('.member-checkbox-input')
+    await checkbox.setValue(true)
 
     expect(clubsStore.filterByMembership).toHaveBeenCalledWith('member')
   })
 
-  it('does not redirect when authenticated user clicks filter', async () => {
+  it('does not redirect when authenticated user checks filter', async () => {
     const authStore = useAuthStore()
     authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } })
     const clubsStore = useClubsStore()
     vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
 
     const wrapper = createWrapper()
-    const buttons = wrapper.findAll('.filter-tab--membership')
-    const memberBtn = buttons.find((b) => b.text() === 'Участвую')
-    await memberBtn!.trigger('click')
+    const checkbox = wrapper.find('.member-checkbox-input')
+    await checkbox.setValue(true)
 
     expect(push).not.toHaveBeenCalled()
   })
@@ -104,6 +101,43 @@ describe('ClubFilters', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('.search-btn-text').exists()).toBe(false)
     expect(wrapper.find('.search-icon').exists()).toBe(true)
+  })
+
+  it('renders club type tabs', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('[data-testid="club-type-tabs"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('По книге')
+    expect(wrapper.text()).toContain('Авторские')
+  })
+
+  it('calls filterByType when author tab is clicked', async () => {
+    const clubsStore = useClubsStore()
+    const filterByTypeSpy = vi.spyOn(clubsStore, 'filterByType').mockResolvedValue(undefined)
+
+    const wrapper = createWrapper()
+    const authorTab = wrapper.find('[data-testid="club-type-tab"][data-type="author"]')
+    await authorTab.trigger('click')
+
+    expect(filterByTypeSpy).toHaveBeenCalledWith('author')
+  })
+
+  it('calls fetchClubs when active type tab is clicked again', async () => {
+    const clubsStore = useClubsStore()
+    const filterByTypeSpy = vi.spyOn(clubsStore, 'filterByType').mockResolvedValue(undefined)
+    const fetchSpy = vi.spyOn(clubsStore, 'fetchClubs').mockResolvedValue(undefined)
+
+    const wrapper = createWrapper()
+    const authorTab = wrapper.find('[data-testid="club-type-tab"][data-type="author"]')
+    await authorTab.trigger('click')
+    await authorTab.trigger('click')
+
+    expect(filterByTypeSpy).toHaveBeenCalledWith('author')
+    expect(fetchSpy).toHaveBeenCalled()
+  })
+
+  it('does not render an all type tab', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('[data-testid="club-type-tab"][data-type="all"]').exists()).toBe(false)
   })
 
   it('switches cards view to grid when grid toggle is clicked', async () => {

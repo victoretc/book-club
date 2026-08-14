@@ -56,10 +56,14 @@ class ClubSerializer(serializers.ModelSerializer):
         model = Club
         fields = [
             "id",
+            "club_type",
             "book_title",
             "book_authors",
             "publication_year",
             "description",
+            "author_name",
+            "author_bio",
+            "author_photo",
             "category",
             "category_name",
             "telegram_chat_link",
@@ -75,6 +79,15 @@ class ClubSerializer(serializers.ModelSerializer):
     def get_category_name(self, obj: Club) -> str | None:
         return obj.category.name if obj.category else None
 
+    def validate(self, attrs: dict) -> dict:
+        club_type = attrs.get("club_type", getattr(self.instance, "club_type", Club.Type.BOOK))
+        if club_type == Club.Type.AUTHOR:
+            if not attrs.get("author_name"):
+                raise serializers.ValidationError({"author_name": "Укажите имя автора/ведущего."})
+            if not attrs.get("author_bio"):
+                raise serializers.ValidationError({"author_bio": "Добавьте описание автора/ведущего."})
+        return attrs
+
 
 class BookClubRequestSerializer(serializers.ModelSerializer):
     requester = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -89,10 +102,14 @@ class BookClubRequestSerializer(serializers.ModelSerializer):
         model = ClubRequest
         fields = [
             "id",
+            "club_type",
             "book_title",
             "book_authors",
             "publication_year",
             "description",
+            "author_name",
+            "author_bio",
+            "author_photo",
             "category",
             "category_name",
             "status",
@@ -117,3 +134,12 @@ class BookClubRequestSerializer(serializers.ModelSerializer):
 
     def get_category_name(self, obj: ClubRequest) -> str | None:
         return obj.category.name if obj.category else None
+
+    def validate(self, attrs: dict) -> dict:
+        club_type = attrs.get("club_type", Club.Type.BOOK)
+        if club_type == Club.Type.AUTHOR:
+            if not attrs.get("author_name"):
+                raise serializers.ValidationError({"author_name": "Укажите имя автора/ведущего."})
+            if not attrs.get("author_bio"):
+                raise serializers.ValidationError({"author_bio": "Добавьте описание автора/ведущего."})
+        return attrs
