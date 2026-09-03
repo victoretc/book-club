@@ -3,6 +3,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
+import heroImg from '@/assets/images/eugene-golovesov-zUuJz_idfqM-unsplash.jpg'
 
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)
@@ -48,62 +49,45 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="header" data-testid="header" :class="{ 'header--overlay': route.meta.overlayHeader }">
-    <div class="header-inner">
-      <router-link to="/" class="brand" data-testid="logo-link">
-        Читальная
-      </router-link>
+  <header class="header" data-testid="header">
+    <div class="capsule">
+      <nav class="capsule-left" data-testid="main-nav">
+        <button
+          class="burger"
+          type="button"
+          data-testid="burger-button"
+          :aria-label="menuOpen ? 'Закрыть меню' : 'Открыть меню'"
+          aria-controls="mobile-nav"
+          :aria-expanded="menuOpen"
+          @click="toggleMenu"
+        >
+          <span class="burger-bar" />
+          <span class="burger-bar" />
+          <span class="burger-bar" />
+        </button>
 
-      <button
-        class="burger"
-        type="button"
-        data-testid="burger-button"
-        :aria-label="menuOpen ? 'Закрыть меню' : 'Открыть меню'"
-        aria-controls="mobile-nav"
-        :aria-expanded="menuOpen"
-        @click="toggleMenu"
-      >
-        <span class="burger-bar" />
-        <span class="burger-bar" />
-        <span class="burger-bar" />
-      </button>
-
-      <nav id="mobile-nav" class="nav" data-testid="main-nav" :class="{ 'nav--open': menuOpen }">
-        <template v-if="isAuthenticated">
-          <router-link to="/clubs/create" class="nav-btn" data-testid="create-club-link">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <line x1="19" y1="8" x2="19" y2="14" />
-              <line x1="22" y1="11" x2="16" y2="11" />
-            </svg>
-            Создать клуб
-          </router-link>
-        </template>
-
-        <router-link to="/clubs" class="nav-btn" data-testid="clubs-link">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 00-3-3.87" />
-            <path d="M16 3.13a4 4 0 010 7.75" />
-          </svg>
-          Клубы
+        <router-link v-if="isAuthenticated" to="/clubs/create" class="nav-pill" data-testid="create-club-link">
+          Создать клуб
         </router-link>
 
-        <router-link v-if="isAuthenticated" to="/profile" class="nav-btn" data-testid="profile-link">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
+        <router-link to="/clubs" class="nav-pill" data-testid="clubs-link">
+          Клубы
+        </router-link>
+      </nav>
+
+      <router-link to="/clubs" class="capsule-brand" data-testid="logo-link">
+        <span class="capsule-brand-name">Читальная</span>
+        <span class="capsule-brand-tagline">Не с кем читать? Решим!</span>
+      </router-link>
+
+      <nav class="capsule-right">
+        <router-link v-if="isAuthenticated" to="/profile" class="nav-pill" data-testid="profile-link">
           Профиль
         </router-link>
 
-        <template v-if="!isAuthenticated">
-          <router-link to="/signin" class="nav-btn">
-            Войти
-          </router-link>
-        </template>
+        <router-link v-if="!isAuthenticated" to="/signin" class="nav-pill">
+          Войти
+        </router-link>
       </nav>
     </div>
   </header>
@@ -111,36 +95,106 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .header {
-  position: relative;
-  z-index: 100;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--color-stroke-subtle);
-  background: var(--color-bg);
-}
-
-.header-inner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
+  justify-content: center;
+  padding: 14px 24px;
 }
 
-.brand {
-  font-family: var(--font-display);
-  font-size: 25px;
-  font-weight: 400;
-  line-height: 1.138;
-  color: var(--color-brand);
+.capsule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 28px;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 1400px;
+}
+
+.capsule-left {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.capsule-brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-decoration: none;
   flex-shrink: 0;
+  padding: 0 20px;
 }
 
-.nav {
+.capsule-brand-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+.capsule-brand-tagline {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.capsule-right {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  background: var(--color-bg);
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.nav-pill:hover {
+  color: var(--color-text);
+  background: var(--color-stroke-subtle);
+}
+
+.nav-pill:active {
+  color: var(--color-text);
+}
+
+.nav-pill.router-link-active {
+  color: var(--color-text);
+  background: var(--color-stroke-subtle);
 }
 
 .burger {
@@ -148,24 +202,24 @@ onBeforeUnmount(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 5px;
-  width: 40px;
-  height: 40px;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
+  border-radius: 50%;
+  background: var(--color-bg);
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .burger:hover {
-  background: var(--color-brand-soft);
+  background: var(--color-stroke-subtle);
 }
 
 .burger-bar {
   display: block;
-  width: 20px;
+  width: 18px;
   height: 2px;
   border-radius: 2px;
   background: var(--color-text);
@@ -175,7 +229,7 @@ onBeforeUnmount(() => {
 }
 
 .burger[aria-expanded='true'] .burger-bar:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
+  transform: translateY(6px) rotate(45deg);
 }
 
 .burger[aria-expanded='true'] .burger-bar:nth-child(2) {
@@ -183,162 +237,50 @@ onBeforeUnmount(() => {
 }
 
 .burger[aria-expanded='true'] .burger-bar:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
-
-.nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--color-text);
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  background: transparent;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease;
-}
-
-.nav-btn svg {
-  width: 22px;
-  height: 22px;
-}
-
-.nav-btn:hover {
-  color: var(--color-brand);
-  background: var(--color-brand-soft);
-}
-
-.nav-btn:active {
-  color: var(--color-brand);
-}
-
-.nav-btn.router-link-active {
-  color: var(--color-brand);
-}
-
-.header--overlay {
-  background: transparent;
-  border-bottom: 1px solid transparent;
-}
-
-.header--overlay .brand {
-  color: #ffffff;
-}
-
-.header--overlay .nav-btn {
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.header--overlay .nav-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.header--overlay .nav-btn.router-link-active {
-  color: #b3b6ff;
-}
-
-.header--overlay .burger-bar {
-  background: #ffffff;
-}
-
-@media (max-width: 768px) {
-  .header--overlay .nav {
-    background: rgba(8, 10, 24, 0.92);
-    border-bottom-color: transparent;
-  }
+  transform: translateY(-6px) rotate(-45deg);
 }
 
 @media (hover: none) {
-  .nav-btn:hover {
+  .nav-pill:hover {
     color: inherit;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.12);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .header {
-    padding: 12px 0;
+    padding: 10px 12px;
   }
 
-  .header-inner {
-    padding: 0 16px;
+  .capsule {
+    padding: 10px 14px;
+    gap: 8px;
   }
 
-  .brand {
-    font-size: 22px;
+  .capsule-brand {
+    font-size: 20px;
+    padding: 0 12px;
   }
 
   .burger {
     display: inline-flex;
   }
 
-  .nav {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-    padding: 0 16px 16px;
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-stroke-subtle);
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px);
-    transition:
-      max-height 0.3s var(--ease-out),
-      opacity 0.25s var(--ease-out),
-      transform 0.3s var(--ease-out),
-      visibility 0.3s;
+  .capsule-left .nav-pill,
+  .capsule-right .nav-pill {
+    display: none;
   }
 
-  .nav--open {
-    max-height: 320px;
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+  .burger[aria-expanded='true'] ~ .capsule-brand {
+    display: none;
   }
 
-  .nav-btn {
-    justify-content: flex-start;
-    padding: 10px 12px;
-    font-size: 16px;
+  .capsule-left {
+    flex: 0;
   }
 
-  .nav-btn svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    padding: 10px 0;
-  }
-
-  .header-inner {
-    padding: 0 12px;
-  }
-
-  .brand {
-    font-size: 20px;
-  }
-
-  .nav {
-    padding: 0 12px 12px;
+  .capsule-right {
+    flex: 0;
   }
 }
 </style>

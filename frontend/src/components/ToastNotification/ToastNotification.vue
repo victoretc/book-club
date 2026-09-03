@@ -6,73 +6,89 @@ const toast = useToast()
 
 <template>
   <Teleport to="body">
-    <div v-if="toast.visible" class="toast" :class="`toast--${toast.type}`" role="status" @click="hideToast">
-      <svg v-if="toast.type === 'error'" class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="9" y1="9" x2="15" y2="15" />
-        <line x1="15" y1="9" x2="9" y2="15" />
-      </svg>
-      <svg v-else class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="8 12 11 15 16 9" />
-      </svg>
-      <span class="toast-text">{{ toast.message }}</span>
-      <button class="toast-close" aria-label="Закрыть уведомление" @click.stop="hideToast">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="5" x2="19" y2="19" />
-          <line x1="19" y1="5" x2="5" y2="19" />
-        </svg>
-      </button>
-    </div>
+    <Transition name="toast">
+      <div
+        v-if="toast.visible"
+        class="toast"
+        :class="`toast--${toast.type}`"
+        role="status"
+        @click="hideToast"
+      >
+        <div class="toast-icon-wrap">
+          <svg v-if="toast.type === 'error'" class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+          </svg>
+          <svg v-else class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="8 12 11 15 16 9" />
+          </svg>
+        </div>
+        <span class="toast-text">{{ toast.message }}</span>
+        <button class="toast-close" aria-label="Закрыть уведомление" @click.stop="hideToast">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="5" x2="19" y2="19" />
+            <line x1="19" y1="5" x2="5" y2="19" />
+          </svg>
+        </button>
+      </div>
+    </Transition>
   </Teleport>
 </template>
 
 <style scoped>
 .toast {
   position: fixed;
-  top: 16px;
-  right: 24px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1000;
   display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: 380px;
-  padding: 14px 16px;
-  border: 1px solid var(--color-stroke-subtle);
-  border-radius: var(--radius-lg);
+  gap: 14px;
+  max-width: 420px;
+  width: max-content;
+  padding: 18px 20px;
+  border-radius: var(--radius-xl);
   background: var(--color-surface);
   color: var(--color-text);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.4;
   cursor: pointer;
-  animation: toast-in 0.3s var(--ease-out);
+  pointer-events: auto;
 }
 
-.toast--error {
-  border-left: 3px solid var(--color-error);
-}
-
-.toast--error .toast-icon {
+.toast--error .toast-icon-wrap {
+  background: var(--color-error-soft);
   color: var(--color-error);
 }
 
-.toast--success {
-  border-left: 3px solid var(--color-success);
-}
-
-.toast--success .toast-icon {
+.toast--success .toast-icon-wrap {
+  background: rgba(66, 207, 113, 0.1);
   color: var(--color-success);
 }
 
-.toast-icon {
+.toast-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
+}
+
+.toast-icon {
+  display: block;
 }
 
 .toast-text {
   flex: 1;
+  min-width: 0;
   color: var(--color-text);
 }
 
@@ -81,16 +97,16 @@ const toast = useToast()
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin: -2px -4px -2px 0;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px -4px 0;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color var(--duration-fast) ease, background var(--duration-fast) ease;
 }
 
 .toast-close:hover {
@@ -98,22 +114,47 @@ const toast = useToast()
   background: var(--color-brand-soft);
 }
 
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.toast-enter-active {
+  transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.toast-leave-active {
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
+}
+
+.toast-enter-to,
+.toast-leave-from {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 @media (max-width: 480px) {
   .toast {
-    right: 16px;
     left: 16px;
+    right: 16px;
+    width: auto;
     max-width: none;
+    transform: translate(0, -50%);
+  }
+
+  .toast-enter-from,
+  .toast-leave-to {
+    transform: translate(0, -50%) scale(0.92);
+  }
+
+  .toast-enter-to,
+  .toast-leave-from {
+    transform: translate(0, -50%) scale(1);
   }
 }
 </style>

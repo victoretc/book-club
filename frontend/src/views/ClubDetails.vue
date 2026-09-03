@@ -84,6 +84,10 @@ async function fetchClub() {
 }
 
 async function handleJoin() {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'signin', query: { redirect: route.fullPath } })
+    return
+  }
   try {
     await clubsStore.joinClub(Number(route.params.id))
     await fetchClub()
@@ -197,36 +201,34 @@ onMounted(async () => {
           Max чат
         </BaseButton>
 
-        <template v-if="authStore.isAuthenticated">
-          <BaseButton
-            v-if="!isMember && !isOwner"
-            variant="primary"
-            testId="club-details-join-button"
-            @click="handleJoin"
-          >
-            Присоединиться
-          </BaseButton>
+        <BaseButton
+          v-if="!isMember && !isOwner"
+          variant="primary"
+          testId="club-details-join-button"
+          @click="handleJoin"
+        >
+          Присоединиться
+        </BaseButton>
 
-          <BaseButton
-            v-if="isMember && !isOwner"
-            variant="danger"
-            :loading="isLeaving"
-            :disabled="isLeaving"
-            testId="club-details-leave-button"
-            @click="handleLeave"
-          >
-            Покинуть клуб
-          </BaseButton>
+        <BaseButton
+          v-if="isMember && !isOwner"
+          variant="danger"
+          :loading="isLeaving"
+          :disabled="isLeaving"
+          testId="club-details-leave-button"
+          @click="handleLeave"
+        >
+          Покинуть клуб
+        </BaseButton>
 
-          <!-- <BaseButton
-            v-if="isOwner"
-            variant="outline"
-            testId="club-details-edit-button"
-            @click="router.push(`/clubs/${club.id}/edit`)"
-          >
-            Редактировать
-          </BaseButton> -->
-        </template>
+        <!-- <BaseButton
+          v-if="isOwner"
+          variant="outline"
+          testId="club-details-edit-button"
+          @click="router.push(`/clubs/${club.id}/edit`)"
+        >
+          Редактировать
+        </BaseButton> -->
       </div>
 
       <div class="card-divider" />

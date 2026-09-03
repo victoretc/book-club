@@ -91,6 +91,8 @@ const classes = computed(() => [
 .base-btn--primary {
   background: var(--color-brand);
   color: #FFFFFF;
+  border-color: rgba(59, 62, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(59, 62, 255, 0.25);
 }
 
 .base-btn--primary:hover:not(:disabled) {

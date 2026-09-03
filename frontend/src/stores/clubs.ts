@@ -3,7 +3,8 @@ import { api } from '@/api'
 import { ContentType } from '@/api/Api'
 import { useAuthStore } from '@/stores/auth'
 import { showToast } from '@/stores/toast'
-import type { BookClubRequestRequest, Club, ClubTypeEnum, PatchedClubRequest } from '@/api/Api'
+import type { BookClubRequestRequest, Club, PatchedClubRequest } from '@/api/Api'
+import { ClubTypeEnum } from '@/api/Api'
 
 interface ClubsListParams {
   category?: number
@@ -17,10 +18,11 @@ interface ClubsListParams {
 interface ClubsState {
   clubs: Club[]
   isLoading: boolean
+  isLoadingMore: boolean
   activeFilter: 'member' | 'all' | null
   activeSearch: string | null
   activeCategory: number | null
-  activeType: ClubTypeEnum | null
+  activeType: ClubTypeEnum
   pagination: {
     count: number
     next: string | null
@@ -34,10 +36,11 @@ export const useClubsStore = defineStore('clubs', {
   state: (): ClubsState => ({
     clubs: [],
     isLoading: false,
+    isLoadingMore: false,
     activeFilter: null,
     activeSearch: null,
     activeCategory: null,
-    activeType: null,
+    activeType: ClubTypeEnum.Book,
     pagination: {
       count: 0,
       next: null,
@@ -84,13 +87,41 @@ export const useClubsStore = defineStore('clubs', {
       return this.fetchClubs(page, pageSize)
     },
 
+    async loadMore() {
+      if (!this.pagination.next || this.isLoadingMore) return
+      const page = this.pagination.currentPage + 1
+      const pageSize = this.pagination.pageSize
+      this.isLoadingMore = true
+      try {
+        const params: ClubsListParams = { page, page_size: pageSize, club_type: this.activeType }
+        if (this.activeSearch) params.search = this.activeSearch
+        if (this.activeFilter && this.activeFilter !== 'all') params.membership = this.activeFilter
+        if (this.activeCategory) params.category = this.activeCategory
+        if (this.activeType) params.club_type = this.activeType
+        const response = await api.api.clubsList(params)
+        this.clubs = [...this.clubs, ...response.data.results]
+        this.pagination = {
+          count: response.data.count,
+          next: response.data.next ?? null,
+          previous: response.data.previous ?? null,
+          currentPage: page,
+          pageSize,
+        }
+      } catch (error) {
+        showToast('Ошибка при загрузке клубов')
+        console.error('Error loading more clubs:', error)
+      } finally {
+        this.isLoadingMore = false
+      }
+    },
+
     async fetchClubs(page: number = 1, pageSize: number = 10) {
       this.activeFilter = 'all'
       this.activeSearch = null
       this.activeCategory = null
-      this.activeType = null
+      this.activeType = ClubTypeEnum.Book
       await this._fetchClubsWithParams(
-        { page, page_size: pageSize },
+        { page, page_size: pageSize, club_type: 'book' },
         'Не удалось загрузить список клубов',
       )
     },
@@ -99,9 +130,9 @@ export const useClubsStore = defineStore('clubs', {
       this.activeSearch = query
       this.activeFilter = null
       this.activeCategory = null
-      this.activeType = null
+      this.activeType = ClubTypeEnum.Book
       await this._fetchClubsWithParams(
-        { search: query, page, page_size: pageSize },
+        { search: query, page, page_size: pageSize, club_type: 'book' },
         'Ошибка при поиске клубов',
       )
     },
@@ -123,11 +154,10 @@ export const useClubsStore = defineStore('clubs', {
     async filterByCategory(categoryId: number, page: number = 1, pageSize: number = 10) {
       this.activeCategory = categoryId
       this.activeSearch = null
-      const params: ClubsListParams = { category: categoryId, page, page_size: pageSize }
+      const params: ClubsListParams = { category: categoryId, club_type: this.activeType, page, page_size: pageSize }
       if (this.activeFilter && this.activeFilter !== 'all') {
         params.membership = this.activeFilter
       }
-      if (this.activeType) params.club_type = this.activeType
       await this._fetchClubsWithParams(params, 'Ошибка при фильтрации по категории')
     },
 

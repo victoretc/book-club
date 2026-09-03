@@ -6,9 +6,9 @@ const STORAGE_KEY = 'clubs-view-mode'
 
 function readInitialMode(): ClubsViewMode {
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'grid' ? 'grid' : 'list'
+    return localStorage.getItem(STORAGE_KEY) === 'list' ? 'list' : 'grid'
   } catch {
-    return 'list'
+    return 'grid'
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useClubsStore } from '@/stores/clubs'
 import { useClubsView } from '@/composables/useClubsView'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
@@ -12,6 +12,8 @@ const searchQuery = ref('')
 const activeType = ref<ClubTypeEnum>('book')
 const searchInput = ref<HTMLInputElement | null>(null)
 const mounted = ref(false)
+const isSticky = ref(false)
+const filtersRef = ref<HTMLElement | null>(null)
 
 const typeFilters = ['book', 'author'] as const
 
@@ -30,8 +32,19 @@ watch(
   { immediate: true },
 )
 
+function onScroll() {
+  if (!filtersRef.value) return
+  isSticky.value = filtersRef.value.getBoundingClientRect().top <= 0
+}
+
 onMounted(() => {
   mounted.value = true
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
 })
 
 const doSearch = (query: string) => {
@@ -59,14 +72,13 @@ const handleSearchKeydown = (e: KeyboardEvent) => {
 }
 
 const applyTypeFilter = (type: 'book' | 'author') => {
-  if (activeType.value === type) return
   activeType.value = type
   clubsStore.filterByType(type)
 }
 </script>
 
 <template>
-  <div class="filters-section">
+  <div ref="filtersRef" class="filters-section" :class="{ 'is-sticky': isSticky }">
     <div class="search-row">
       <div class="search-bar">
         <input
@@ -136,16 +148,6 @@ const applyTypeFilter = (type: 'book' | 'author') => {
           {{ typeLabels[t] }}
         </button>
       </div>
-
-      <label class="member-checkbox">
-        <input type="checkbox" class="member-checkbox-input" :checked="activeFilter === 'member'" @change="handleMemberToggle" />
-        <span class="member-checkbox-box">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </span>
-        <span class="member-checkbox-label">Участвую</span>
-      </label>
     </div>
   </div>
 </template>
@@ -207,6 +209,7 @@ const applyTypeFilter = (type: 'book' | 'author') => {
 .type-tab.active {
   background: var(--color-brand);
   color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(59, 62, 255, 0.25);
 }
 
 .type-tab:not(.active):hover {
@@ -215,55 +218,6 @@ const applyTypeFilter = (type: 'book' | 'author') => {
 
 .type-tab.active-pop {
   animation: active-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.member-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.member-checkbox-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.member-checkbox-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  border: 1.5px solid var(--color-text-secondary);
-  color: transparent;
-  background: var(--color-surface);
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.member-checkbox-input:checked + .member-checkbox-box {
-  background: var(--color-brand);
-  border-color: var(--color-brand);
-  color: #FFFFFF;
-}
-
-.member-checkbox-input:focus-visible + .member-checkbox-box {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
-}
-
-.member-checkbox-label {
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--color-text);
-  white-space: nowrap;
 }
 
 @media (min-width: 769px) {
@@ -285,6 +239,12 @@ const applyTypeFilter = (type: 'book' | 'author') => {
     height: 40px;
     background: linear-gradient(to bottom, var(--color-bg), transparent);
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .filters-section.is-sticky::after {
+    opacity: 1;
   }
 }
 
@@ -368,6 +328,7 @@ const applyTypeFilter = (type: 'book' | 'author') => {
 .view-toggle-btn.active {
   background: var(--color-brand);
   color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(59, 62, 255, 0.25);
 }
 
 @keyframes active-pop {

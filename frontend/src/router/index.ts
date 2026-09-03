@@ -8,7 +8,7 @@ const router = createRouter({
       path: '/signin',
       name: 'signin',
       component: () => import('@/views/SignIn.vue'),
-      meta: { title: 'Вход', hideFooter: true },
+      meta: { title: 'Вход', hideFooter: true, hideHeader: true },
     },
     {
       path: '/clubs/create',
@@ -48,7 +48,6 @@ const router = createRouter({
       name: 'club-details',
       component: () => import('@/views/ClubDetails.vue'),
       meta: {
-        requiresAuth: true,
         title: 'Детали клуба',
       },
     },
@@ -75,19 +74,13 @@ const router = createRouter({
     },
     {
       path: '/',
-      name: 'landing',
-      component: () => import('@/views/Landing.vue'),
-      meta: {
-        title: 'Читальная — книжные клубы',
-        fullBleed: true,
-        overlayHeader: true,
-      },
-    },
-    {
-      path: '/clubs',
       name: 'clubs',
       component: () => import('@/views/ClubCards.vue'),
       meta: { title: 'Клубы' },
+    },
+    {
+      path: '/clubs',
+      redirect: '/',
     },
     {
       path: '/categories/:slug',

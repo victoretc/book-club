@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { useAuthStore } from '@/stores/auth'
 import { useClubsStore } from '@/stores/clubs'
 import { useClubsView } from '@/composables/useClubsView'
 import ClubFilters from './ClubFilters.vue'
@@ -37,52 +36,11 @@ describe('ClubFilters', () => {
     expect(wrapper.find('input[placeholder="Найти книжный клуб"]').exists()).toBe(true)
   })
 
-  it('renders filter checkbox', () => {
-    const wrapper = createWrapper()
-    expect(wrapper.find('.member-checkbox-input').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Участвую')
-    expect(wrapper.text()).not.toContain('Мои клубы')
-  })
-
   it('updates search query on input', async () => {
     const wrapper = createWrapper()
     const input = wrapper.find('input')
     await input.setValue('test')
     expect((input.element as HTMLInputElement).value).toBe('test')
-  })
-
-  it('redirects to signin when unauthenticated user checks member filter', async () => {
-    const wrapper = createWrapper()
-    const checkbox = wrapper.find('.member-checkbox-input')
-    expect(checkbox.exists()).toBe(true)
-    await checkbox.setValue(true)
-    expect(push).toHaveBeenCalledWith('/signin')
-  })
-
-  it('calls filterByMembership when authenticated user checks filter', async () => {
-    const authStore = useAuthStore()
-    authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } })
-    const clubsStore = useClubsStore()
-    vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
-
-    const wrapper = createWrapper()
-    const checkbox = wrapper.find('.member-checkbox-input')
-    await checkbox.setValue(true)
-
-    expect(clubsStore.filterByMembership).toHaveBeenCalledWith('member')
-  })
-
-  it('does not redirect when authenticated user checks filter', async () => {
-    const authStore = useAuthStore()
-    authStore.$patch({ accessToken: 'test', user: { id: 1, username: 'test' } })
-    const clubsStore = useClubsStore()
-    vi.spyOn(clubsStore, 'filterByMembership').mockResolvedValue(undefined)
-
-    const wrapper = createWrapper()
-    const checkbox = wrapper.find('.member-checkbox-input')
-    await checkbox.setValue(true)
-
-    expect(push).not.toHaveBeenCalled()
   })
 
   it('calls searchClubs when search button is clicked', async () => {

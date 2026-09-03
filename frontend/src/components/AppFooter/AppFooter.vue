@@ -18,9 +18,7 @@ const legalLinks = [
           <router-link to="/" class="footer-brand-link" aria-label="Читальная — на главную">
             Читальная
           </router-link>
-          <p class="footer-tagline">
-            Книжные клубы для тех, кто не хочет читать в одиночестве.
-          </p>
+
         </div>
 
         <nav class="footer-nav" aria-label="Разделы сайта">
@@ -67,7 +65,7 @@ const legalLinks = [
   display: flex;
   justify-content: space-between;
   gap: 48px;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .footer-brand {
@@ -81,13 +79,6 @@ const legalLinks = [
   line-height: 1.138;
   color: var(--color-brand);
   text-decoration: none;
-}
-
-.footer-tagline {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-text-secondary);
 }
 
 .footer-nav {

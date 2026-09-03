@@ -10,11 +10,11 @@ const route = useRoute()
 
 <template>
   <div class="app-layout">
-    <AppHeader v-if="!route.meta.hideChrome" />
-    <main :class="{ 'main--full-bleed': route.meta.fullBleed }">
+    <AppHeader v-if="!route.meta.hideHeader" />
+    <main>
       <router-view />
     </main>
-    <AppFooter v-if="!route.meta.hideChrome && !route.meta.hideFooter" />
+    <AppFooter v-if="!route.meta.hideFooter" />
     <ToastNotification />
     <CookieConsent />
   </div>
@@ -36,24 +36,19 @@ main {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 48px 24px 60px;
+  padding: 140px 24px 60px;
 }
 
 @media (max-width: 768px) {
   main {
-    padding: 24px 16px 40px;
+    padding: 120px 16px 40px;
   }
 }
 
 @media (max-width: 480px) {
   main {
-    padding: 16px 12px 32px;
+    padding: 90px 12px 32px;
   }
-}
-
-.main--full-bleed {
-  padding: 0;
-  max-width: none;
 }
 
 </style>

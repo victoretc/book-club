@@ -7,7 +7,6 @@ import type { Club, Member } from '@/api/Api'
 import { ClubTypeEnum } from '@/api/Api'
 import ClubFilters from '@/components/ClubFilters/ClubFilters.vue'
 import CategorySidebar from '@/components/CategorySidebar/CategorySidebar.vue'
-import PaginationControls from '@/components/PaginationControls/PaginationControls.vue'
 import BreadcrumbsNav from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import type { Crumb } from '@/components/Breadcrumbs/BreadcrumbsNav.vue'
 import { useClubsView } from '@/composables/useClubsView'
@@ -59,6 +58,13 @@ const showScrollTop = ref(false)
 
 function onScroll() {
   showScrollTop.value = window.scrollY > window.innerHeight * 0.6
+
+  const scrollHeight = document.documentElement.scrollHeight
+  const scrollTop = window.scrollY
+  const clientHeight = window.innerHeight
+  if (scrollHeight - scrollTop - clientHeight < 400) {
+    clubsStore.loadMore()
+  }
 }
 
 function scrollToTop() {
@@ -78,15 +84,7 @@ const loadClubsByRoute = async () => {
   if (currentCategory.value) {
     await clubsStore.filterByCategory(currentCategory.value.id)
   } else {
-    if (clubsStore.activeFilter && clubsStore.activeFilter !== 'all') {
-      clubsStore.activeCategory = null
-      await clubsStore.filterByMembership(clubsStore.activeFilter)
-    } else if (clubsStore.activeType) {
-      clubsStore.activeCategory = null
-      await clubsStore.filterByType(clubsStore.activeType)
-    } else {
-      await clubsStore.fetchClubs()
-    }
+    await clubsStore.fetchClubs()
   }
 }
 
@@ -111,14 +109,17 @@ const openClubPage = (clubId: number) => {
   router.push(`/clubs/${clubId}`)
 }
 
-const avatarColors = ['#F1FFD6', '#A0EC06', '#42CF71', '#FFE4B5', '#DDA0DD', '#87CEEB']
+const avatarColors = [
+  { bg: '#E6E4FF', text: '#4A46C7' },
+  { bg: '#DFF3E7', text: '#2E8B57' },
+  { bg: '#FFECDD', text: '#C96A33' },
+  { bg: '#F2E9FF', text: '#7A5CBB' },
+  { bg: '#DEF2F4', text: '#2E8B8F' },
+  { bg: '#FDE8EF', text: '#D15C8A' },
+]
 
 const getInitials = (m: Member): string => {
-  if (m.firstName && m.lastName) return (m.firstName[0] + m.lastName[0]).toUpperCase()
   if (m.firstName) return m.firstName[0].toUpperCase()
-  if (m.lastName) return m.lastName[0].toUpperCase()
-  if (m.email) return m.email[0].toUpperCase()
-  if (m.username) return m.username[0].toUpperCase()
   return '?'
 }
 
@@ -132,7 +133,8 @@ const memberInitials = (club: Club) => {
 
 <template>
   <div class="clubs-page">
-    <BreadcrumbsNav :trail="breadcrumbTrail" :trailing-slash="!currentCategory">
+    <div class="clubs-content">
+      <BreadcrumbsNav :trail="breadcrumbTrail" :trailing-slash="!currentCategory">
       <template #actions>
         <button v-if="currentCategory" type="button" class="crumb-back" @click="goBackToCategories">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -174,7 +176,6 @@ const memberInitials = (club: Club) => {
             <div v-for="n in 3" :key="n" class="skeleton-card" :class="`skeleton-card--${viewMode}`">
               <div class="skeleton-heading">
                 <div class="skeleton-line skeleton-title" />
-                <div class="skeleton-line skeleton-badge" />
               </div>
               <div class="skeleton-line skeleton-author" />
               <div class="skeleton-line skeleton-desc" />
@@ -197,8 +198,7 @@ const memberInitials = (club: Club) => {
               @click="openClubPage(club.id)"
             >
               <div class="card-header">
-                <h3 class="card-title">{{ club.bookTitle }}</h3>
-                <span class="year-badge">{{ club.publicationYear }}</span>
+                <h3 class="card-title">{{ club.bookTitle }}<span v-if="club.publicationYear" class="title-year"> &lt;{{ club.publicationYear }}&gt;</span></h3>
               </div>
 
               <div v-if="isAuthorClub(club)" class="card-author-club">
@@ -229,7 +229,7 @@ const memberInitials = (club: Club) => {
                       v-for="(item, i) in memberInitials(club)"
                       :key="i"
                       class="member-avatar"
-                      :style="{ backgroundColor: item.color }"
+                      :style="{ backgroundColor: item.color.bg, color: item.color.text }"
                     >
                       {{ item.initials }}
                     </span>
@@ -247,16 +247,9 @@ const memberInitials = (club: Club) => {
             </div>
           </div>
         </Transition>
-
-        <PaginationControls
-          v-if="clubsStore.clubs.length >= 5 && !clubsStore.isLoading"
-          class="pagination-wrap"
-          :current-page="clubsStore.pagination.currentPage"
-          :total-pages="clubsStore.totalPages"
-          :page-size="clubsStore.pagination.pageSize"
-          @page-change="clubsStore.goToPage"
-          @page-size-change="clubsStore.changePageSize"
-        />
+        <div v-if="clubsStore.isLoadingMore" class="load-more-spinner">
+          <div class="spinner" />
+        </div>
       </div>
 
       <CategorySidebar
@@ -281,6 +274,7 @@ const memberInitials = (club: Club) => {
         </svg>
       </button>
     </Transition>
+    </div>
   </div>
 </template>
 
@@ -288,6 +282,14 @@ const memberInitials = (club: Club) => {
 .clubs-page {
   width: 100%;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.clubs-content {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -350,8 +352,9 @@ const memberInitials = (club: Club) => {
 
 .chip--active {
   background: var(--color-brand);
-  border-color: var(--color-brand);
+  border-color: rgba(59, 62, 255, 0.4);
   color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(59, 62, 255, 0.25);
 }
 
 .chip--all {
@@ -387,7 +390,7 @@ const memberInitials = (club: Club) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -395,7 +398,7 @@ const memberInitials = (club: Club) => {
   .clubs-list--grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    align-items: stretch;
   }
 
   .clubs-list--grid .club-card,
@@ -428,20 +431,27 @@ const memberInitials = (club: Club) => {
 
 @media (min-width: 768px) {
   .club-card--grid {
-    aspect-ratio: 4 / 3;
     height: 100%;
     border-radius: 24px;
     padding: 20px;
-    gap: 8px;
+    gap: 0;
     overflow: hidden;
   }
 
+  .club-card--grid .card-header {
+    margin-bottom: 8px;
+  }
+
+  .club-card--grid .card-author-club {
+    margin-bottom: 8px;
+  }
+
+  .club-card--grid .now-reading {
+    margin-bottom: 8px;
+  }
+
   .club-card--grid .card-title {
-    font-size: 22px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 18px;
   }
 
   .club-card--grid .card-author {
@@ -465,20 +475,20 @@ const memberInitials = (club: Club) => {
   }
 
   .club-card--grid .card-desc {
+    margin-top: auto;
     font-size: 14px;
     line-height: 1.55;
     -webkit-line-clamp: 2;
   }
 
   .club-card--grid .card-footer {
-    margin-top: auto;
+    margin-top: 12px;
     padding-top: 12px;
     gap: 8px;
   }
 
-  .club-card--grid .year-badge {
+  .club-card--grid .title-year {
     font-size: 12px;
-    padding: 3px 8px;
   }
 
   .club-card--grid .member-avatar,
@@ -495,32 +505,25 @@ const memberInitials = (club: Club) => {
 
 .card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
 }
 
 .card-title {
   font-family: var(--font-heading);
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 500;
   line-height: 1.1;
   color: var(--color-text);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
-.year-badge {
-  padding: 4px 10px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-stroke-subtle);
-  border-radius: 30px;
-  font-family: var(--font-body);
-  font-size: 15px;
+.title-year {
+  font-family: var(--font-heading);
   font-weight: 500;
-  line-height: 1.21;
   color: var(--color-text-secondary);
-  flex-shrink: 0;
 }
+
 
 .card-author {
   font-family: var(--font-body);
@@ -636,7 +639,7 @@ const memberInitials = (club: Club) => {
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 700;
-  color: #1A1A1A;
+  color: #FFFFFF;
   border: 2px solid var(--color-surface);
   margin-left: -8px;
   flex-shrink: 0;
@@ -691,6 +694,22 @@ const memberInitials = (club: Club) => {
   gap: 16px;
 }
 
+.load-more-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-stroke-subtle);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
 .skeleton-card {
   width: 100%;
   max-width: 704px;
@@ -704,8 +723,8 @@ const memberInitials = (club: Club) => {
 
 @media (min-width: 768px) {
   .skeleton-card--grid {
-    aspect-ratio: 4 / 3;
     height: 100%;
+    min-height: 260px;
     border-radius: 24px;
     padding: 20px;
     gap: 8px;
@@ -715,7 +734,6 @@ const memberInitials = (club: Club) => {
 
 .skeleton-heading {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
 }
@@ -739,12 +757,6 @@ const memberInitials = (club: Club) => {
 .skeleton-title {
   flex: 1;
   height: 32px;
-}
-
-.skeleton-badge {
-  width: 60px;
-  height: 28px;
-  flex-shrink: 0;
 }
 
 .skeleton-author {
@@ -816,7 +828,7 @@ const memberInitials = (club: Club) => {
 
 @media (max-width: 768px) {
   .clubs-page {
-    gap: 16px;
+    gap: 0;
   }
 
   .category-chips {
@@ -894,7 +906,7 @@ const memberInitials = (club: Club) => {
   }
 
   .clubs-list {
-    gap: 12px;
+    gap: 10px;
   }
 
   .clubs-column {
@@ -913,11 +925,6 @@ const memberInitials = (club: Club) => {
   .card-title {
     font-size: 20px;
     flex: 1;
-  }
-
-  .year-badge {
-    font-size: 12px;
-    padding: 3px 8px;
   }
 
   .card-author {
@@ -968,11 +975,6 @@ const memberInitials = (club: Club) => {
 
   .skeleton-title {
     height: 24px;
-  }
-
-  .skeleton-badge {
-    width: 48px;
-    height: 22px;
   }
 
   .skeleton-author {
