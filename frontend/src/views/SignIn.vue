@@ -64,7 +64,8 @@ async function verifyCodeHandler() {
     </button>
 
     <div class="auth-split" data-testid="login-container">
-      <div class="auth-left" :style="{ backgroundImage: `url(${heroImg})` }">
+      <div class="auth-left">
+        <div class="auth-left-img" :style="{ backgroundImage: `url(${heroImg})` }" />
         <div class="auth-left-overlay" />
         <div class="auth-left-content">
           <p class="auth-description">
@@ -163,11 +164,18 @@ async function verifyCodeHandler() {
 
 .auth-left {
   position: relative;
-  width: 50%;
+  width: 40%;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  margin: 16px;
+}
+
+.auth-left-img {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  overflow: hidden;
 }
 
 .auth-left-overlay {
@@ -190,14 +198,14 @@ async function verifyCodeHandler() {
 .auth-description {
   font-family: var(--font-body);
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
 }
 
 .auth-right {
-  width: 50%;
+  width: 60%;
   display: flex;
   align-items: center;
   justify-content: center;
