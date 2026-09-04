@@ -46,14 +46,17 @@ onMounted(() => {
     <BreadcrumbsNav :trail="breadcrumbs" />
 
     <div class="create-split">
-      <div class="create-left">
+      <div class="create-left" :class="{ 'create-left--full': clubType }">
+        <ClubTypePicker v-if="!clubType" @select="selectType" />
+        <ClubForm v-else :club-type="clubType" />
+      </div>
+
+      <div v-if="!clubType" class="create-right">
         <Transition name="instruction-fade">
           <div v-if="showInstruction" class="create-instruction-block">
-            <div class="create-left-img" :style="{ backgroundImage: `url(${heroImg})` }">
-              <div class="create-left-img-overlay" />
-              <div class="create-instruction-title-wrap">
-                <h2 class="create-instruction-title">Как создать клуб?</h2>
-              </div>
+            <div class="create-right-img" :style="{ backgroundImage: `url(${heroImg})` }">
+              <div class="create-right-img-overlay" />
+              <h2 class="create-instruction-title">Как создать клуб?</h2>
             </div>
             <div class="create-instruction-body">
               <p class="create-instruction-text">
@@ -72,11 +75,6 @@ onMounted(() => {
             </div>
           </div>
         </Transition>
-      </div>
-
-      <div class="create-right">
-        <ClubTypePicker v-if="!clubType" @select="selectType" />
-        <ClubForm v-else :club-type="clubType" />
       </div>
     </div>
   </div>
@@ -102,7 +100,23 @@ onMounted(() => {
   min-width: 0;
 }
 
-.create-left-img {
+.create-left--full {
+  flex: none;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.create-right {
+  flex: 0 0 auto;
+  width: 420px;
+}
+
+.create-instruction-block {
+  width: 100%;
+}
+
+.create-right-img {
   width: 100%;
   height: 220px;
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
@@ -111,57 +125,20 @@ onMounted(() => {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.create-left-img-overlay {
+.create-right-img-overlay {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
 }
 
-.create-instruction-title-wrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
-
-.create-instruction-body {
-  background: var(--color-surface);
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
-  padding: 28px 32px 32px;
-}
-
-.create-right {
-  flex: 1;
-  min-width: 0;
-}
-
-.create-instruction-close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.12);
-  color: #fff;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
-}
-
-.create-instruction-close:hover {
-  background: rgba(0, 0, 0, 0.24);
-}
-
 .create-instruction-title {
+  position: relative;
+  z-index: 1;
   margin: 0;
   font-family: var(--font-heading);
   font-size: 32px;
@@ -171,11 +148,17 @@ onMounted(() => {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
+.create-instruction-body {
+  background: var(--color-surface);
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  padding: 24px 28px 28px;
+}
+
 .create-instruction-text {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
-  color: var(--color-text);
+  color: var(--color-text-secondary);
   margin: 0 0 12px;
 }
 
@@ -215,9 +198,9 @@ onMounted(() => {
 }
 
 :deep(.form-title) {
-  text-align: right;
+  text-align: left;
   font-size: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 12px;
 }
 
 :deep(.type-picker) {
@@ -227,17 +210,13 @@ onMounted(() => {
 }
 
 :deep(.type-picker__content) {
-  align-items: flex-end;
-  text-align: right;
-  padding: 0;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0 0 32px;
 }
 
 :deep(.type-picker__title) {
-  font-size: 24px;
-}
-
-.create-instruction-block {
-  max-width: 500px;
+  font-size: 26px;
 }
 
 @media (max-width: 768px) {
@@ -253,7 +232,7 @@ onMounted(() => {
     width: 100%;
   }
 
-.create-left-img {
+  .create-right-img {
     height: 180px;
   }
 
@@ -262,7 +241,7 @@ onMounted(() => {
   }
 
   .create-instruction-title {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .create-instruction-text {

@@ -72,7 +72,7 @@ const choose = (type: ClubTypeEnum) => {
   gap: 12px;
   width: 100%;
   max-width: 640px;
-  margin-top: 28px;
+  margin-top: 16px;
 }
 
 .type-option {

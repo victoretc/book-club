@@ -442,7 +442,7 @@ const onSubmit = handleSubmit(async (values) => {
   font-size: 28px;
   font-weight: 500;
   line-height: 1.1;
-  margin-bottom: 36px;
+  margin-bottom: 16px;
   text-align: center;
   color: var(--color-text);
 }

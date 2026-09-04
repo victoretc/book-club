@@ -74,7 +74,7 @@ defineProps<{
 
 .crumb--current {
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .crumb-sep {
