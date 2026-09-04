@@ -40,9 +40,9 @@ const toast = useToast()
 <style scoped>
 .toast {
   position: fixed;
-  top: 50%;
+  top: 24px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -124,18 +124,18 @@ const toast = useToast()
 
 .toast-enter-from {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.92);
+  transform: translateX(-50%) translateY(-12px) scale(0.95);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.92);
+  transform: translateX(-50%) translateY(-12px) scale(0.95);
 }
 
 .toast-enter-to,
 .toast-leave-from {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translateX(-50%) scale(1);
 }
 
 @media (max-width: 480px) {
@@ -144,17 +144,21 @@ const toast = useToast()
     right: 16px;
     width: auto;
     max-width: none;
-    transform: translate(0, -50%);
+    transform: none;
   }
 
   .toast-enter-from,
   .toast-leave-to {
-    transform: translate(0, -50%) scale(0.92);
+    transform: none;
+    opacity: 0;
+    scale: 0.95;
   }
 
   .toast-enter-to,
   .toast-leave-from {
-    transform: translate(0, -50%) scale(1);
+    transform: none;
+    opacity: 1;
+    scale: 1;
   }
 }
 </style>

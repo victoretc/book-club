@@ -36,18 +36,18 @@ main {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 140px 24px 60px;
+  padding: 24px 24px 60px;
 }
 
 @media (max-width: 768px) {
   main {
-    padding: 120px 16px 40px;
+    padding: 16px 16px 40px;
   }
 }
 
 @media (max-width: 480px) {
   main {
-    padding: 90px 12px 32px;
+    padding: 12px 12px 32px;
   }
 }
 

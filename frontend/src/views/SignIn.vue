@@ -63,53 +63,61 @@ async function verifyCodeHandler() {
       </svg>
     </button>
 
-    <div class="auth-card" :style="{ backgroundImage: `url(${heroImg})` }" data-testid="login-container">
-      <div class="auth-card-overlay" />
+    <div class="auth-split" data-testid="login-container">
+      <div class="auth-left" :style="{ backgroundImage: `url(${heroImg})` }">
+        <div class="auth-left-overlay" />
+        <div class="auth-left-content">
+          <h1 class="auth-brand">Читальная</h1>
+          <p class="auth-tagline">Место, где книги объединяют людей</p>
+        </div>
+      </div>
 
-      <div class="auth-body">
-        <h1 class="auth-title">Вход</h1>
+      <div class="auth-right">
+        <div class="auth-right-inner">
+          <h2 class="auth-title">Вход</h2>
 
-        <form v-if="step === 'email'" @submit.prevent="requestCodeHandler" class="auth-form" data-testid="login-form-element">
-          <div class="field">
-            <label for="email">Электропочта</label>
-            <input
-              v-model="form.email"
-              type="email"
-              id="email"
-              required
-              placeholder="example@yandex.ru"
-              class="input"
-              data-testid="email-input"
-            />
-          </div>
-          <button type="submit" class="auth-submit" :disabled="isLoading" data-testid="submit-button">
-            {{ isLoading ? 'Отправка…' : 'Получить код' }}
-          </button>
-          <p v-if="error" class="error-msg">{{ error }}</p>
-        </form>
+          <form v-if="step === 'email'" @submit.prevent="requestCodeHandler" class="auth-form" data-testid="login-form-element">
+            <div class="auth-field">
+              <label for="email">Электропочта <span class="required">*</span></label>
+              <input
+                v-model="form.email"
+                type="email"
+                id="email"
+                required
+                placeholder="example@yandex.ru"
+                class="auth-input"
+                data-testid="email-input"
+              />
+            </div>
+            <button type="submit" class="auth-submit" :disabled="isLoading" data-testid="submit-button">
+              {{ isLoading ? 'Отправка…' : 'Получить код' }}
+            </button>
+            <p v-if="error" class="auth-error">{{ error }}</p>
+          </form>
 
-        <form v-else @submit.prevent="verifyCodeHandler" class="auth-form">
-          <div class="field">
-            <label for="code">Код из письма</label>
-            <input
-              v-model="form.code"
-              type="text"
-              id="code"
-              required
-              inputmode="numeric"
-              maxlength="4"
-              placeholder="0000"
-              class="input"
-              data-testid="code-input"
-              autocomplete="one-time-code"
-            />
-          </div>
-          <button type="submit" class="auth-submit" :disabled="isLoading || form.code.length !== 4" data-testid="verify-button">
-            {{ isLoading ? 'Проверка…' : 'Подтвердить' }}
-          </button>
-          <p v-if="error" class="error-msg">{{ error }}</p>
-          <p class="auth-recovery">Если код не пришёл — проверьте «Спам»</p>
-        </form>
+          <form v-else @submit.prevent="verifyCodeHandler" class="auth-form">
+            <div class="auth-field">
+              <label for="code">Код из письма</label>
+              <input
+                v-model="form.code"
+                type="text"
+                id="code"
+                required
+                inputmode="numeric"
+                maxlength="4"
+                placeholder="0000"
+                class="auth-input"
+                data-testid="code-input"
+                autocomplete="one-time-code"
+              />
+            </div>
+            <button type="submit" class="auth-submit" :disabled="isLoading || form.code.length !== 4" data-testid="verify-button">
+              {{ isLoading ? 'Проверка…' : 'Подтвердить' }}
+            </button>
+            <p v-if="error" class="auth-error">{{ error }}</p>
+            <p class="auth-recovery">Если код не пришёл — проверьте «Спам»</p>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -120,15 +128,14 @@ async function verifyCodeHandler() {
   position: fixed;
   inset: 0;
   z-index: 200;
-  display: flex;
-  padding: 24px;
+  background: var(--color-bg);
 }
 
 .auth-close {
   position: absolute;
-  top: 36px;
-  right: 36px;
-  z-index: 2;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,174 +143,213 @@ async function verifyCodeHandler() {
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.12);
+  color: #fff;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .auth-close:hover {
-  background: rgba(255, 255, 255, 0.24);
-  color: #FFFFFF;
+  background: rgba(0, 0, 0, 0.24);
 }
 
-.auth-card {
-  position: relative;
+.auth-split {
+  display: flex;
   width: 100%;
-  border-radius: var(--radius-lg);
+  height: 100%;
+}
+
+.auth-left {
+  position: relative;
+  width: 50%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.auth-card-overlay {
+.auth-left-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.55) 100%);
 }
 
-.auth-card > *:not(.auth-card-overlay) {
+.auth-left-content {
   position: relative;
   z-index: 1;
-}
-
-.auth-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 48px 40px;
+  color: #fff;
+}
+
+.auth-brand {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0 0 12px;
+}
+
+.auth-tagline {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.auth-right {
+  width: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 28px 28px;
-  gap: 20px;
+  background: var(--color-bg);
+  padding: 40px;
+}
+
+.auth-right-inner {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
 }
 
 .auth-title {
   font-family: var(--font-heading);
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 500;
   line-height: 1.1;
-  text-align: center;
-  color: #FFFFFF;
-  margin: 0;
+  color: var(--color-text);
+  margin: 0 0 32px;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 440px;
   gap: 16px;
 }
 
-.field {
+.auth-field {
   display: flex;
   flex-direction: column;
 }
 
-.field label {
+.auth-field label {
   display: block;
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary);
 }
 
-.input {
+.required {
+  color: var(--color-error);
+}
+
+.auth-input {
   width: 100%;
-  height: 52px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  padding: 0 18px;
+  height: 48px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 12px;
+  padding: 0 16px;
   font-family: var(--font-body);
-  font-size: 17px;
-  color: #FFFFFF;
-  transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+  font-size: 16px;
+  color: var(--color-text);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
 }
 
-.input::placeholder {
-  color: rgba(255, 255, 255, 0.45);
+.auth-input::placeholder {
+  color: var(--color-text-secondary);
 }
 
-.input:focus {
+.auth-input:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.18);
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-ring);
 }
 
 .auth-submit {
-  height: 52px;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.12);
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-brand);
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
-  color: #FFFFFF;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  color: #fff;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .auth-submit:hover {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #2e30cc;
 }
 
 .auth-submit:active {
-  background: rgba(255, 255, 255, 0.28);
+  background: #2528b5;
 }
 
 .auth-submit:disabled {
-  opacity: 0.5;
+  background: #C0C0CC;
   cursor: not-allowed;
+}
+
+.auth-error {
+  color: var(--color-error);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
 }
 
 .auth-recovery {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   line-height: 1.5;
   text-align: center;
   margin: 0;
 }
 
-.error-msg {
-  color: #FFB3B3;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 500;
-  margin: 0;
-}
-
-@media (max-width: 480px) {
-  .auth-page {
-    padding: 16px;
+@media (max-width: 768px) {
+  .auth-split {
+    flex-direction: column;
   }
 
-  .auth-close {
-    top: 28px;
-    right: 28px;
+  .auth-left {
+    width: 100%;
+    height: 40%;
+    min-height: 200px;
   }
 
-  .auth-title {
+  .auth-right {
+    width: 100%;
+    height: 60%;
+    padding: 28px 24px;
+    overflow-y: auto;
+  }
+
+  .auth-left-content {
+    padding: 28px 24px;
+  }
+
+  .auth-brand {
     font-size: 26px;
   }
 
-  .auth-body {
-    padding: 0 20px 20px;
+  .auth-title {
+    font-size: 24px;
+    margin-bottom: 24px;
   }
 
-  .input {
-    height: 46px;
-    padding: 0 14px;
-    font-size: 16px;
-  }
-
-  .auth-submit {
-    height: 46px;
-    font-size: 16px;
+  .auth-close {
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.2);
   }
 }
 </style>

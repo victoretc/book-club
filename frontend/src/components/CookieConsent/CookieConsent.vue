@@ -41,15 +41,6 @@ onMounted(() => {
   <Transition name="cookie-pop">
     <div v-if="visible" class="cookie" role="dialog" aria-live="polite" data-testid="cookie-banner">
       <div class="cookie-card">
-        <div class="cookie-icon" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5z" />
-            <circle cx="8" cy="11" r="1" fill="currentColor" />
-            <circle cx="14" cy="15" r="1" fill="currentColor" />
-            <circle cx="16" cy="9" r="1" fill="currentColor" />
-          </svg>
-        </div>
-
         <h2 class="cookie-title">Мы заботимся о ваших данных</h2>
         <p class="cookie-text">
           Используем файлы cookie для корректной работы сайта, аналитики и улучшения сервиса.
@@ -87,17 +78,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.cookie-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
-  background: var(--color-brand-soft);
-  color: var(--color-brand);
 }
 
 .cookie-title {
@@ -143,17 +123,6 @@ onMounted(() => {
     border-radius: 20px 20px 0 0;
     padding: 20px;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
-  }
-
-  .cookie-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-  }
-
-  .cookie-icon svg {
-    width: 22px;
-    height: 22px;
   }
 
   .cookie-title {
