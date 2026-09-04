@@ -215,15 +215,6 @@ const onSubmit = handleSubmit(async (values) => {
   <form v-else @submit="onSubmit" class="form-card" data-testid="club-form">
     <h1 class="form-title" data-testid="club-form-title">{{ clubId ? 'Редактирование клуба' : (isAuthorType ? 'Создать авторский клуб' : 'Создать клуб по книге') }}</h1>
 
-    <div v-if="!clubId" class="type-switch">
-      <span class="type-switch-label">
-        {{ isAuthorType ? 'Авторский клуб' : 'Клуб по книге' }}
-      </span>
-      <button type="button" class="type-switch-btn" @click="clubType = null">
-        Сменить тип
-      </button>
-    </div>
-
     <div class="field">
       <label for="bookTitle">Название книги *</label>
       <Field

@@ -50,22 +50,41 @@ onBeforeUnmount(() => {
 <template>
   <header class="header" data-testid="header">
     <div class="header-inner">
-      <nav class="header-left" data-testid="main-nav">
-        <router-link to="/clubs" class="nav-link" data-testid="clubs-link">Клубы</router-link>
-        <router-link v-if="isAuthenticated" to="/clubs/create" class="nav-link" data-testid="create-club-link">
+      <router-link to="/clubs" class="header-brand" data-testid="logo-link">
+        Читальная
+      </router-link>
+
+      <nav class="header-nav" data-testid="main-nav">
+        <router-link to="/clubs" class="header-nav-link" data-testid="clubs-link">
+          <svg class="header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+          </svg>
+          Клубы
+        </router-link>
+        <router-link v-if="isAuthenticated" to="/clubs/create" class="header-nav-link" data-testid="create-club-link">
+          <svg class="header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
           Создать клуб
+        </router-link>
+        <router-link v-if="isAuthenticated" to="/profile" class="header-nav-link" data-testid="profile-link">
+          <svg class="header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Профиль
         </router-link>
       </nav>
 
-      <router-link to="/clubs" class="header-brand" data-testid="logo-link">
-        <span class="header-brand-name">Читальная</span>
-      </router-link>
-
-      <nav class="header-right">
-        <router-link v-if="isAuthenticated" to="/profile" class="nav-link" data-testid="profile-link">
-          Профиль
-        </router-link>
-        <router-link v-if="!isAuthenticated" to="/signin" class="nav-link nav-link--cta">
+      <div class="header-actions">
+        <router-link v-if="!isAuthenticated" to="/signin" class="header-cta" data-testid="signin-link">
+          <svg class="header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
           Войти
         </router-link>
 
@@ -81,18 +100,18 @@ onBeforeUnmount(() => {
           <span class="burger-bar" />
           <span class="burger-bar" />
         </button>
-      </nav>
+      </div>
     </div>
 
     <Transition name="mobile-menu">
-      <div v-if="menuOpen" class="mobile-menu">
+      <nav v-if="menuOpen" class="mobile-menu">
         <router-link to="/clubs" class="mobile-menu-link">Клубы</router-link>
         <router-link v-if="isAuthenticated" to="/clubs/create" class="mobile-menu-link">
           Создать клуб
         </router-link>
         <router-link v-if="isAuthenticated" to="/profile" class="mobile-menu-link">Профиль</router-link>
         <router-link v-if="!isAuthenticated" to="/signin" class="mobile-menu-link">Войти</router-link>
-      </div>
+      </nav>
     </Transition>
   </header>
 </template>
@@ -101,108 +120,104 @@ onBeforeUnmount(() => {
 .header {
   position: relative;
   z-index: 100;
-  padding: 16px 24px 0;
 }
 
 .header-inner {
-  position: relative;
   display: flex;
   align-items: center;
-  max-width: 1120px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 14px 12px;
-  border-radius: 100px;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 4px 16px rgba(0, 0, 0, 0.04);
-  transition:
-    box-shadow 0.3s var(--ease-out),
-    background 0.3s var(--ease-out);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex: 1;
+  padding: 14px 24px 10px;
 }
 
 .header-brand {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 24px;
-  flex-shrink: 0;
-  z-index: 1;
-}
-
-.header-brand-name {
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 400;
   line-height: 1;
   color: var(--color-text);
-  transition: opacity 0.2s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
 }
 
-.header-brand:hover .header-brand-name {
-  opacity: 0.7;
+.header-brand:hover {
+  color: var(--color-brand);
 }
 
-.header-right {
+.header-nav {
   display: flex;
   align-items: center;
-  gap: 2px;
-  flex: 1;
-  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: 12px;
 }
 
-.nav-link {
+.header-nav-link {
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
-  border-radius: 100px;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
-  line-height: 1;
   color: var(--color-text-secondary);
   text-decoration: none;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  background: transparent;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.nav-link:hover {
+.header-nav-link:hover {
   color: var(--color-text);
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--color-stroke-subtle);
 }
 
-.nav-link.router-link-active {
+.header-nav-link.router-link-exact-active {
   color: var(--color-text);
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--color-stroke-subtle);
 }
 
-.nav-link--cta {
+.header-icon {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.header-nav-link:hover .header-icon,
+.header-nav-link.router-link-exact-active .header-icon {
+  opacity: 0.8;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
   color: var(--color-brand);
-  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.nav-link--cta:hover {
-  color: #2e30cc;
+.header-cta:hover {
   background: var(--color-brand-soft);
+}
+
+.header-cta .header-icon {
+  opacity: 0.7;
+}
+
+.header-cta:hover .header-icon {
+  opacity: 1;
 }
 
 .burger {
@@ -219,11 +234,10 @@ onBeforeUnmount(() => {
   background: transparent;
   cursor: pointer;
   transition: background 0.2s ease;
-  margin-left: 4px;
 }
 
 .burger:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--color-stroke-subtle);
 }
 
 .burger-bar {
@@ -249,38 +263,27 @@ onBeforeUnmount(() => {
 .mobile-menu {
   display: none;
   flex-direction: column;
-  gap: 2px;
-  max-width: 1120px;
-  margin: 8px auto 0;
-  padding: 8px 12px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 0 24px 12px;
+  border-bottom: 1px solid var(--color-stroke-subtle);
 }
 
 .mobile-menu-link {
   display: block;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 10px 0;
   font-family: var(--font-body);
   font-size: 15px;
   font-weight: 500;
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .mobile-menu-link:hover {
   color: var(--color-text);
-  background: rgba(0, 0, 0, 0.04);
 }
 
-.mobile-menu-link.router-link-active {
-  color: var(--color-text);
-  background: rgba(0, 0, 0, 0.06);
+.mobile-menu-link.router-link-exact-active {
+  color: var(--color-brand);
 }
 
 .mobile-menu-enter-active {
@@ -293,43 +296,35 @@ onBeforeUnmount(() => {
 
 .mobile-menu-enter-from {
   opacity: 0;
-  transform: translateY(-8px) scale(0.96);
+  transform: translateY(-8px);
 }
 
 .mobile-menu-leave-to {
   opacity: 0;
-  transform: translateY(-4px) scale(0.98);
+  transform: translateY(-4px);
 }
 
 @media (max-width: 640px) {
-  .header {
-    padding: 10px 12px;
-  }
-
   .header-inner {
-    padding: 10px 10px 10px 16px;
+    padding: 12px 24px;
   }
 
-  .header-left {
+  .header-nav {
     display: none;
   }
 
-  .header-right .nav-link {
+  .header-cta {
     display: none;
   }
 
   .burger {
     display: flex;
-  }
-
-  .header-brand {
-    position: static;
-    transform: none;
-    padding: 0;
+    margin-left: auto;
   }
 
   .mobile-menu {
     display: flex;
+    padding: 0 24px 12px;
   }
 }
 </style>

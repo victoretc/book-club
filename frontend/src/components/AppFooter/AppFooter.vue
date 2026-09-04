@@ -77,8 +77,13 @@ const legalLinks = [
   font-size: 25px;
   font-weight: 400;
   line-height: 1.138;
-  color: var(--color-brand);
+  color: var(--color-text);
   text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-brand-link:hover {
+  color: var(--color-brand);
 }
 
 .footer-nav {

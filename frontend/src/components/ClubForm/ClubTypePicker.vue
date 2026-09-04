@@ -26,7 +26,6 @@ const choose = (type: ClubTypeEnum) => {
         >
           <span class="type-option__capsule type-option__capsule--blue" aria-hidden="true" />
           <span class="type-option__title">Клуб по книге</span>
-          <span class="type-option__desc">Сообщество вокруг одной книги, которую вы читаете вместе.</span>
         </button>
 
         <button
@@ -37,7 +36,6 @@ const choose = (type: ClubTypeEnum) => {
         >
           <span class="type-option__capsule type-option__capsule--red" aria-hidden="true" />
           <span class="type-option__title">Авторский клуб</span>
-          <span class="type-option__desc">Клуб ведёт известный человек — автор, эксперт или наставник.</span>
         </button>
       </div>
     </div>
@@ -93,20 +91,19 @@ const choose = (type: ClubTypeEnum) => {
   cursor: pointer;
   text-align: center;
   transition:
-    transform var(--duration-fast) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out),
     box-shadow var(--duration-normal) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    background var(--duration-fast) var(--ease-out);
+    border-color var(--duration-fast) var(--ease-out);
 }
 
 .type-option:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-brand);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-stroke-subtle);
 }
 
 .type-option:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0);
 }
 
 .type-option:focus-visible {
@@ -160,12 +157,6 @@ const choose = (type: ClubTypeEnum) => {
   font-weight: 500;
   line-height: 1.15;
   color: var(--color-text);
-}
-
-.type-option__desc {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--color-text-secondary);
 }
 
 @media (max-width: 640px) {

@@ -214,7 +214,6 @@ async function verifyCodeHandler() {
 .auth-right-inner {
   width: 100%;
   max-width: 400px;
-  text-align: center;
 }
 
 .auth-title {
@@ -224,6 +223,7 @@ async function verifyCodeHandler() {
   line-height: 1.1;
   color: var(--color-text);
   margin: 0 0 32px;
+  text-align: center;
 }
 
 .auth-form {

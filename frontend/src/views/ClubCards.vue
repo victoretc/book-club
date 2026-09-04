@@ -233,7 +233,6 @@ const memberInitials = (club: Club) => {
                     >
                       {{ item.initials }}
                     </span>
-                    <span v-if="isMember(club)" class="you-badge">вы</span>
                   </div>
                   <span class="member-count">{{ memberReadingText(club.members.length, isMember(club)) }}</span>
                 </div>
