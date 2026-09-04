@@ -189,7 +189,10 @@ const memberInitials = (club: Club) => {
               @click="openClubPage(club.id)"
             >
               <div class="card-header">
-                <h3 class="card-title">{{ club.bookTitle }}<span v-if="club.publicationYear" class="title-year"> &lt;{{ club.publicationYear }}&gt;</span></h3>
+                <h3 class="card-title">
+                  <template v-if="isAuthorClub(club)">{{ club.authorName }}</template>
+                  <template v-else>{{ club.bookTitle }}<span v-if="club.publicationYear" class="title-year"> &lt;{{ club.publicationYear }}&gt;</span></template>
+                </h3>
               </div>
 
               <div v-if="isAuthorClub(club)" class="card-author-club">
@@ -199,11 +202,6 @@ const memberInitials = (club: Club) => {
                   alt=""
                   class="author-avatar"
                 />
-                <span v-else class="author-avatar author-avatar--placeholder">{{ authorInitial(club) }}</span>
-                <div class="author-club-info">
-                  <span class="club-type-badge">Авторский клуб</span>
-                  <span class="card-author author-name">{{ club.authorName }}</span>
-                </div>
               </div>
 
               <p v-if="isAuthorClub(club) && club.authorBio" class="card-desc">{{ club.authorBio }}</p>
@@ -527,41 +525,13 @@ const memberInitials = (club: Club) => {
   color: var(--color-brand);
 }
 
-.author-club-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.club-type-badge {
-  align-self: flex-start;
-  padding: 3px 10px;
-  background: var(--color-brand-soft);
-  border-radius: 30px;
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--color-brand);
-  white-space: nowrap;
-}
-
-.author-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .now-reading {
   font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
   color: var(--color-text-secondary);
+  margin-top: 8px;
 }
 
 .card-desc {

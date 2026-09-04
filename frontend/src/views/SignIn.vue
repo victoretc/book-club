@@ -67,8 +67,10 @@ async function verifyCodeHandler() {
       <div class="auth-left" :style="{ backgroundImage: `url(${heroImg})` }">
         <div class="auth-left-overlay" />
         <div class="auth-left-content">
-          <h1 class="auth-brand">Читальная</h1>
-          <p class="auth-tagline">Место, где книги объединяют людей</p>
+          <p class="auth-description">
+            После того как вы войдете вы сможете создавать клубы,
+            присоединяться к существующим клубам, создавать страницу прочитанных вами книг
+          </p>
         </div>
       </div>
 
@@ -185,20 +187,12 @@ async function verifyCodeHandler() {
   color: #fff;
 }
 
-.auth-brand {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 400;
-  line-height: 1.1;
-  margin: 0 0 12px;
-}
-
-.auth-tagline {
+.auth-description {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 400;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0;
 }
 
@@ -337,8 +331,8 @@ async function verifyCodeHandler() {
     padding: 28px 24px;
   }
 
-  .auth-brand {
-    font-size: 26px;
+  .auth-description {
+    font-size: 18px;
   }
 
   .auth-title {
