@@ -17,6 +17,11 @@ const choose = (type: ClubTypeEnum) => {
     <div class="type-picker__content">
       <h2 class="type-picker__title">Какой клуб хочешь создать?</h2>
 
+      <p class="type-picker__description">
+        <strong>Клуб по книге</strong> — обсуждение одной книги: впечатления, цитаты, параллели.
+        <strong>Авторский клуб</strong> — изучение творчества автора: темы, мотивы, стиль.
+      </p>
+
       <div class="type-picker__options">
         <button
           type="button"
@@ -58,7 +63,7 @@ const choose = (type: ClubTypeEnum) => {
 }
 
 .type-picker__title {
-  margin: 0;
+  margin: 0 0 8px;
   font-family: var(--font-heading);
   font-size: 34px;
   font-weight: 500;
@@ -114,6 +119,21 @@ const choose = (type: ClubTypeEnum) => {
   font-weight: 500;
   line-height: 1.2;
   color: var(--color-text);
+}
+
+.type-picker__description {
+  margin: 0 0 20px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  text-align: left;
+  max-width: 600px;
+}
+
+.type-picker__description strong {
+  color: var(--color-text);
+  font-weight: 500;
 }
 
 @media (max-width: 640px) {
