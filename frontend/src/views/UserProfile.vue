@@ -19,7 +19,6 @@ const userInitials = computed(() => {
   return '?'
 })
 
-const isEditing = ref(false)
 const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -93,27 +92,6 @@ const handleLogout = async () => {
   router.push('/signin')
 }
 
-const startEditing = () => {
-  isEditing.value = true
-  error.value = ''
-  success.value = ''
-}
-
-const cancelEditing = () => {
-  isEditing.value = false
-  error.value = ''
-  success.value = ''
-
-  if (authStore.user) {
-    editForm.value = {
-      username: authStore.user.username || '',
-      firstName: authStore.user.firstName || '',
-      lastName: authStore.user.lastName || '',
-      email: authStore.user.email || '',
-    }
-  }
-}
-
 const updateProfile = async () => {
   isLoading.value = true
   error.value = ''
@@ -141,8 +119,6 @@ const updateProfile = async () => {
     } else {
       success.value = 'Нет изменений для сохранения'
     }
-
-    isEditing.value = false
   } catch (err: unknown) {
     const apiError = err as {
       response?: {
@@ -168,40 +144,13 @@ const updateProfile = async () => {
 </script>
 
 <template>
-  <div class="profile-page">
-    <div v-if="authStore.user" class="profile-card">
-      <div v-if="!isEditing" class="profile-view">
+  <div v-if="authStore.user" class="profile-page">
+    <div class="profile-split">
+      <div class="profile-card">
         <div class="profile-avatar">
           {{ userInitials }}
         </div>
 
-        <div class="profile-fields">
-          <div class="profile-field">
-            <span class="field-label">Логин</span>
-            <span class="field-value">{{ authStore.user.username }}</span>
-          </div>
-          <div v-if="authStore.user.firstName" class="profile-field">
-            <span class="field-label">Имя</span>
-            <span class="field-value">{{ authStore.user.firstName }}</span>
-          </div>
-          <div v-if="authStore.user.lastName" class="profile-field">
-            <span class="field-label">Фамилия</span>
-            <span class="field-value">{{ authStore.user.lastName }}</span>
-          </div>
-          <div v-if="authStore.user.email" class="profile-field">
-            <span class="field-label">Email</span>
-            <span class="field-value">{{ authStore.user.email }}</span>
-          </div>
-        </div>
-
-        <div class="profile-actions">
-          <BaseButton variant="primary" full-width @click="startEditing">Редактировать</BaseButton>
-          <BaseButton variant="danger" full-width @click="handleLogout">Выйти</BaseButton>
-        </div>
-      </div>
-
-      <div v-else class="profile-edit">
-        <h2 class="edit-title">Редактирование профиля</h2>
         <form @submit.prevent="updateProfile" class="edit-form">
           <div class="field">
             <label for="username">Логин</label>
@@ -227,78 +176,76 @@ const updateProfile = async () => {
             <BaseButton type="submit" variant="primary" full-width :loading="isLoading" :disabled="isLoading">
               Сохранить
             </BaseButton>
-            <BaseButton variant="outline" full-width @click="cancelEditing" :disabled="isLoading">
-              Отмена
-            </BaseButton>
+            <BaseButton variant="danger" full-width @click="handleLogout">Выйти</BaseButton>
           </div>
         </form>
       </div>
-    </div>
 
-    <div class="reading-list-card" data-testid="reading-list-block">
-      <h2 class="reading-list-title">Страница прочитанных книг</h2>
-      <p class="reading-list-text">
-        Опубликуй страницу прочитанных книг, чтобы поделиться ею с друзьями. На ней появятся
-        книги из клубов, участником которых ты являешься, а также твои отзывы, если ты их оставил.
-      </p>
+      <div class="reading-list-card" data-testid="reading-list-block">
+        <h2 class="reading-list-title">Страница прочитанных книг</h2>
+        <p class="reading-list-text">
+          Опубликуй страницу прочитанных книг, чтобы поделиться ею с друзьями. На ней появятся
+          книги из клубов, участником которых ты являешься, а также твои отзывы, если ты их оставил.
+        </p>
 
-      <template v-if="isReadingListPublic">
-        <div class="reading-list-link">
-          <a
-            :href="readingListUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="link-value"
-            data-testid="reading-list-link"
+        <template v-if="isReadingListPublic">
+          <div class="reading-list-link">
+            <a
+              :href="readingListUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link-value"
+              data-testid="reading-list-link"
+            >
+              {{ readingListUrl }}
+            </a>
+            <button
+              type="button"
+              class="link-copy"
+              aria-label="Скопировать ссылку"
+              data-testid="reading-list-copy-button"
+              @click="copyLink"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+            </button>
+          </div>
+
+          <BaseButton
+            variant="brand-outline"
+            full-width
+            testId="reading-list-open-button"
+            @click="openReadingList"
           >
-            {{ readingListUrl }}
-          </a>
-          <button
-            type="button"
-            class="link-copy"
-            aria-label="Скопировать ссылку"
-            data-testid="reading-list-copy-button"
-            @click="copyLink"
+            Открыть мою страницу
+          </BaseButton>
+
+          <BaseButton
+            variant="danger"
+            full-width
+            :loading="isUpdatingVisibility"
+            :disabled="isUpdatingVisibility"
+            testId="reading-list-hide-button"
+            @click="toggleReadingListVisibility"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
-          </button>
-        </div>
+            Скрыть страницу прочитанных мной книг
+          </BaseButton>
+        </template>
 
         <BaseButton
-          variant="brand-outline"
-          full-width
-          testId="reading-list-open-button"
-          @click="openReadingList"
-        >
-          Открыть мою страницу
-        </BaseButton>
-
-        <BaseButton
-          variant="danger"
+          v-else
+          variant="primary"
           full-width
           :loading="isUpdatingVisibility"
           :disabled="isUpdatingVisibility"
-          testId="reading-list-hide-button"
+          testId="reading-list-publish-button"
           @click="toggleReadingListVisibility"
         >
-          Скрыть страницу прочитанных мной книг
+          Опубликовать страницу прочитанных мной книг
         </BaseButton>
-      </template>
-
-      <BaseButton
-        v-else
-        variant="primary"
-        full-width
-        :loading="isUpdatingVisibility"
-        :disabled="isUpdatingVisibility"
-        testId="reading-list-publish-button"
-        @click="toggleReadingListVisibility"
-      >
-        Опубликовать страницу прочитанных мной книг
-      </BaseButton>
+      </div>
     </div>
   </div>
 </template>
@@ -306,21 +253,25 @@ const updateProfile = async () => {
 <style scoped>
 .profile-page {
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
+}
+
+.profile-split {
+  display: flex;
+  width: 100%;
+  gap: 24px;
+  align-items: flex-start;
 }
 
 .profile-card {
+  flex: 1;
+  min-width: 0;
   background: var(--color-surface);
   border-radius: 32px;
   padding: 36px 32px 32px;
-}
-
-.profile-view {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
+  gap: 28px;
 }
 
 .profile-avatar {
@@ -337,62 +288,11 @@ const updateProfile = async () => {
   color: var(--color-brand);
 }
 
-.profile-fields {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-field {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--color-stroke-subtle);
-}
-
-.profile-field:last-child {
-  border-bottom: none;
-}
-
-.field-label {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.field-value {
-  font-size: 16px;
-  font-weight: 500;
-  text-align: right;
-  word-break: break-word;
-  color: var(--color-text);
-}
-
-.profile-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.profile-edit {
-  width: 100%;
-}
-
-.edit-title {
-  font-family: var(--font-heading);
-  font-size: 24px;
-  font-weight: 500;
-  margin-bottom: 24px;
-  text-align: center;
-  color: var(--color-text);
-}
-
 .edit-form {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .field {
@@ -403,7 +303,7 @@ const updateProfile = async () => {
   display: block;
   font-size: 14px;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--color-text-secondary);
 }
 
@@ -450,7 +350,8 @@ const updateProfile = async () => {
 }
 
 .reading-list-card {
-  margin-top: 20px;
+  flex: 1;
+  min-width: 0;
   background: var(--color-surface);
   border-radius: 32px;
   padding: 32px;
@@ -532,13 +433,22 @@ const updateProfile = async () => {
   filter: brightness(0.92);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .profile-split {
+    flex-direction: column;
+  }
+
+  .profile-card,
   .reading-list-card {
-    padding: 24px;
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .profile-card {
     padding: 24px;
   }
@@ -549,24 +459,8 @@ const updateProfile = async () => {
     text-indent: 0.1em;
   }
 
-  .profile-field {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .field-value {
-    text-align: left;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .form-actions {
-    flex-direction: column;
+  .reading-list-card {
+    padding: 24px;
   }
 }
 </style>

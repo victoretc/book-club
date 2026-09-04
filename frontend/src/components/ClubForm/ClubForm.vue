@@ -7,16 +7,17 @@ import { useClubsStore } from '@/stores/clubs'
 import { useCategoriesStore } from '@/stores/categories'
 import { showToast } from '@/stores/toast'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
-import ClubTypePicker from '@/components/ClubForm/ClubTypePicker.vue'
 import { ClubTypeEnum } from '@/api/Api'
 import type { Club } from '@/api/Api'
 import type { BookClubRequestRequest } from '@/api/Api'
 
 interface Props {
   clubId?: number | null
+  clubType?: ClubTypeEnum | null
 }
 const props = withDefaults(defineProps<Props>(), {
   clubId: null,
+  clubType: null,
 })
 
 const emit = defineEmits<{
@@ -29,7 +30,6 @@ const categoriesStore = useCategoriesStore()
 const isLoading = ref(false)
 const errorMsg = ref('')
 
-const clubType = ref<ClubTypeEnum | null>(null)
 const photoFile = ref<File | null>(null)
 const existingPhoto = ref<string | null>(null)
 
@@ -56,7 +56,7 @@ const selectedSubcategoryName = computed(() => {
   return categoriesStore.nameById(subcategoryId.value)
 })
 
-const isAuthorType = computed(() => clubType.value === ClubTypeEnum.Author)
+const isAuthorType = computed(() => props.clubType === ClubTypeEnum.Author)
 
 const photoPreview = computed(() => {
   if (photoFile.value) return URL.createObjectURL(photoFile.value)
@@ -139,7 +139,6 @@ async function loadClub() {
     const category = categoriesStore.categoryById(club.category)
     parentCategoryId.value = category?.parent ?? club.category ?? ''
     subcategoryId.value = category?.parent != null ? club.category ?? '' : ''
-    clubType.value = club.clubType ?? ClubTypeEnum.Book
     existingPhoto.value = club.authorPhoto ?? null
     setFieldValue('clubType', club.clubType ?? ClubTypeEnum.Book)
     setValues({
@@ -156,11 +155,6 @@ async function loadClub() {
   } finally {
     isLoading.value = false
   }
-}
-
-function selectType(type: ClubTypeEnum) {
-  clubType.value = type
-  setFieldValue('clubType', type)
 }
 
 function onPhotoChange(e: Event) {
@@ -185,7 +179,7 @@ const onSubmit = handleSubmit(async (values) => {
   if (category === '') return
   isLoading.value = true
   errorMsg.value = ''
-  const type = clubType.value ?? ClubTypeEnum.Book
+  const type = props.clubType ?? ClubTypeEnum.Book
   const payload = {
     ...(values as Partial<Club>),
     clubType: type,
@@ -210,9 +204,7 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <ClubTypePicker v-if="!clubId && !clubType" @select="selectType" />
-
-  <form v-else @submit="onSubmit" class="form-card" data-testid="club-form">
+  <form @submit="onSubmit" class="form-card" data-testid="club-form">
     <h1 class="form-title" data-testid="club-form-title">{{ clubId ? 'Редактирование клуба' : (isAuthorType ? 'Создать авторский клуб' : 'Создать клуб по книге') }}</h1>
 
     <div class="field">

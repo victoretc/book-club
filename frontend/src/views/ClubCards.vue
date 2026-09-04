@@ -134,16 +134,7 @@ const memberInitials = (club: Club) => {
 <template>
   <div class="clubs-page">
     <div class="clubs-content">
-      <BreadcrumbsNav :trail="breadcrumbTrail" :trailing-slash="!currentCategory">
-      <template #actions>
-        <button v-if="currentCategory" type="button" class="crumb-back" @click="goBackToCategories">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M11 18l-6-6 6-6" />
-          </svg>
-          Назад к категориям
-        </button>
-      </template>
-    </BreadcrumbsNav>
+      <BreadcrumbsNav :trail="breadcrumbTrail" :trailing-slash="!currentCategory" />
 
     <ClubFilters />
 
@@ -293,27 +284,6 @@ const memberInitials = (club: Club) => {
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
-}
-
-.crumb-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.crumb-back svg {
-  flex-shrink: 0;
 }
 
 .category-chips {

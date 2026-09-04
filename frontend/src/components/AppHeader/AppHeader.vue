@@ -120,6 +120,7 @@ onBeforeUnmount(() => {
 .header {
   position: relative;
   z-index: 100;
+  width: 100%;
 }
 
 .header-inner {
@@ -151,7 +152,6 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   margin-left: auto;
-  margin-right: 12px;
 }
 
 .header-nav-link {

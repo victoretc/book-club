@@ -2,6 +2,7 @@
 export interface Crumb {
   label: string
   to?: string
+  action?: () => void
 }
 
 defineProps<{
@@ -17,6 +18,9 @@ defineProps<{
         <router-link v-if="crumb.to" :to="crumb.to" class="crumb crumb--link">
           {{ crumb.label }}
         </router-link>
+        <button v-else-if="crumb.action" type="button" class="crumb crumb--link crumb--button" @click="crumb.action">
+          {{ crumb.label }}
+        </button>
         <span v-else class="crumb" :class="{ 'crumb--current': i === trail.length - 1 }">
           {{ crumb.label }}
         </span>
@@ -51,7 +55,6 @@ defineProps<{
 .crumb {
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: 4px 8px;
   border-radius: 8px;
   transition: color 0.2s ease, background 0.2s ease;
 }
@@ -59,6 +62,14 @@ defineProps<{
 .crumb--link:hover {
   color: var(--color-text);
   background: var(--color-bg);
+}
+
+.crumb--button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 .crumb--current {
